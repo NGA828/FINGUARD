@@ -84,7 +84,7 @@ export default function CustomerProfile() {
           <UserRound className="h-4 w-4 text-brand-600" /> Informations personnelles
         </p>
         <form onSubmit={saveProfile} className="mt-5 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom">
               <input className="input" value={f.firstName || ''} onChange={(e) => setForm({ ...f, firstName: e.target.value })} />
             </Field>

@@ -104,7 +104,7 @@ export default function NewTransactionModal({ open, onClose, onDone }: { open: b
         </motion.div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {TYPES.map((t) => (
               <motion.button
                 key={t.id}

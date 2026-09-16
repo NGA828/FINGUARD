@@ -63,9 +63,13 @@ export default function EmployeeTransactions() {
                   </p>
                   <p className="text-[11px] text-slate-400">{formatDateTime(t.createdAt)}</p>
                 </div>
-                <RiskBadge level={t.riskLevel} score={t.riskScore} />
-                <TxStatusBadge status={t.status} />
-                <p className="w-28 text-right text-[13px] font-black text-slate-700">{formatXAF(t.amount)}</p>
+                <div className="hidden min-[420px]:block">
+                  <RiskBadge level={t.riskLevel} score={t.riskScore} />
+                </div>
+                <div className="hidden sm:block">
+                  <TxStatusBadge status={t.status} />
+                </div>
+                <p className="w-24 text-right text-[13px] font-black text-slate-700 sm:w-28">{formatXAF(t.amount)}</p>
               </motion.button>
             ))}
           </div>

@@ -117,13 +117,13 @@ export default function AdminEmployees() {
 
       <Modal open={open} onClose={() => setOpen(false)} title="Créer un employé">
         <form onSubmit={create} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom"><input required className="input" value={form.firstName || ''} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></Field>
             <Field label="Nom"><input required className="input" value={form.lastName || ''} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></Field>
           </div>
           <Field label="E-mail"><input type="email" required className="input" value={form.email || ''} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
           <Field label="Mot de passe initial"><input required minLength={8} className="input" value={form.password || ''} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Poste"><input required className="input" value={form.position || ''} onChange={(e) => setForm({ ...form, position: e.target.value })} /></Field>
             <Field label="Département"><input required className="input" value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} /></Field>
           </div>
@@ -133,11 +133,11 @@ export default function AdminEmployees() {
 
       <Modal open={!!edit} onClose={() => setEdit(null)} title={`Modifier ${edit?.name || ''}`}>
         <form onSubmit={saveEdit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom"><input className="input" value={form.firstName || ''} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></Field>
             <Field label="Nom"><input className="input" value={form.lastName || ''} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Poste"><input className="input" value={form.position || ''} onChange={(e) => setForm({ ...form, position: e.target.value })} /></Field>
             <Field label="Département"><input className="input" value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} /></Field>
           </div>

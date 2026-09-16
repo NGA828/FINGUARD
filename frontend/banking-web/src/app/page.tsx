@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Menu, X } from 'lucide-react';
 import {
   ArrowRight,
   BellRing,
@@ -86,6 +88,7 @@ const riskRows = [
 ];
 
 export default function LandingPage() {
+  const [mobileMenu, setMobileMenu] = useState(false);
   return (
     <div className="min-h-screen bg-navy-950 text-white">
       {/* ---------------------------------------------------------- */}
@@ -117,7 +120,7 @@ export default function LandingPage() {
               <a href="#apercu" className="transition hover:text-white">Aperçu</a>
             </div>
             <div className="flex items-center gap-3">
-              <Link href="/auth/login" className="text-[13.5px] font-semibold text-slate-300 transition hover:text-white">
+              <Link href="/auth/login" className="hidden text-[13.5px] font-semibold text-slate-300 transition hover:text-white sm:block">
                 Se connecter
               </Link>
               <Link
@@ -126,8 +129,44 @@ export default function LandingPage() {
               >
                 Créer un compte
               </Link>
+              <button
+                onClick={() => setMobileMenu((m) => !m)}
+                className="glass rounded-xl p-2 text-white md:hidden"
+                aria-label="Menu"
+              >
+                {mobileMenu ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </button>
             </div>
           </motion.nav>
+
+          {/* Menu mobile */}
+          <AnimatePresence>
+            {mobileMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="glass mt-2 rounded-2xl p-4 md:hidden"
+              >
+                <div className="flex flex-col gap-1 text-sm font-semibold text-slate-200">
+                  {[
+                    ['#fonctionnement', 'Fonctionnement'],
+                    ['#fonctionnalites', 'Fonctionnalités'],
+                    ['#securite', 'Sécurité'],
+                    ['#apercu', 'Aperçu'],
+                  ].map(([href, label]) => (
+                    <a key={href} href={href} onClick={() => setMobileMenu(false)} className="rounded-lg px-3 py-2.5 transition hover:bg-white/10">
+                      {label}
+                    </a>
+                  ))}
+                  <Link href="/auth/login" onClick={() => setMobileMenu(false)} className="rounded-lg px-3 py-2.5 text-brand-300 transition hover:bg-white/10">
+                    Se connecter
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -150,7 +189,7 @@ export default function LandingPage() {
             </Reveal>
 
             <Reveal delay={0.1}>
-              <h1 className="mt-6 text-5xl font-black leading-[1.05] tracking-tight md:text-6xl">
+              <h1 className="mt-6 text-4xl font-black leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
                 Votre banque,
                 <br />
                 <span className="text-gradient animate-gradient-x bg-[length:200%_auto]">protégée par l’IA.</span>
@@ -187,19 +226,19 @@ export default function LandingPage() {
             <Reveal delay={0.4}>
               <div className="mt-12 grid max-w-md grid-cols-3 gap-6">
                 <div>
-                  <p className="text-3xl font-black text-white">
+                  <p className="text-2xl font-black text-white sm:text-3xl">
                     <AnimatedNumber value={99.2} format={(n) => n.toFixed(1)} /> %
                   </p>
                   <p className="mt-1 text-xs font-semibold text-slate-500">de détection des anomalies</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-black text-white">
+                  <p className="text-2xl font-black text-white sm:text-3xl">
                     &lt;<AnimatedNumber value={50} /> ms
                   </p>
                   <p className="mt-1 text-xs font-semibold text-slate-500">d’analyse par transaction</p>
                 </div>
                 <div>
-                  <p className="text-3xl font-black text-white">
+                  <p className="text-2xl font-black text-white sm:text-3xl">
                     <AnimatedNumber value={3} />
                   </p>
                   <p className="mt-1 text-xs font-semibold text-slate-500">niveaux de risque pilotés</p>
@@ -233,7 +272,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: 30, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.7, type: 'spring', stiffness: 200, damping: 22 }}
-                className="glass absolute -left-6 bottom-10 w-64 rounded-2xl p-4 shadow-2xl"
+                className="glass absolute -left-1 bottom-6 w-56 rounded-2xl p-4 shadow-2xl sm:-left-6 sm:bottom-10 sm:w-64"
               >
                 <div className="flex items-center justify-between">
                   <p className="text-xs font-bold text-slate-300">Analyse en direct</p>
@@ -258,7 +297,7 @@ export default function LandingPage() {
                 initial={{ opacity: 0, y: -20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ delay: 0.9, type: 'spring', stiffness: 200, damping: 22 }}
-                className="glass absolute -right-4 top-8 w-56 rounded-2xl p-4 shadow-2xl"
+                className="glass absolute -right-1 top-4 w-48 rounded-2xl p-3.5 shadow-2xl sm:-right-4 sm:top-8 sm:w-56 sm:p-4"
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20">

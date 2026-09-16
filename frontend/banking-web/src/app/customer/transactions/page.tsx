@@ -100,11 +100,13 @@ export default function CustomerTransactions() {
                     {formatDateTime(t.createdAt)} · Réf. {t.reference}
                   </p>
                 </div>
-                <RiskBadge level={t.riskLevel} score={t.riskScore} />
+                <div className="hidden min-[420px]:block">
+                  <RiskBadge level={t.riskLevel} score={t.riskScore} />
+                </div>
                 <div className="hidden sm:block">
                   <TxStatusBadge status={t.status} />
                 </div>
-                <p className={`w-28 text-right text-[13.5px] font-black ${t.sourceAccountId ? 'text-slate-700' : 'text-emerald-600'}`}>
+                <p className={`w-24 text-right text-[13px] font-black sm:w-28 sm:text-[13.5px] ${t.sourceAccountId ? 'text-slate-700' : 'text-emerald-600'}`}>
                   {t.sourceAccountId ? '−' : '+'}
                   {formatXAF(t.amount)}
                 </p>

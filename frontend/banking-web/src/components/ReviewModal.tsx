@@ -111,7 +111,7 @@ export default function ReviewModal({ txId, open, onClose, onDone, allowReview =
               <Field label="Note d'examen (optionnel)">
                 <textarea rows={2} className="input" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Justification de la décision…" />
               </Field>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <Button onClick={() => act('approve')} loading={busy === 'approve'} className="w-full">
                   <CheckCircle2 className="h-4 w-4" /> Approuver
                 </Button>

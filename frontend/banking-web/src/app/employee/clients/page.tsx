@@ -37,12 +37,12 @@ export default function EmployeeClients() {
 
   return (
     <PageIn className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative min-w-64 flex-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un client (nom, e-mail, téléphone)…" className="input pl-9" />
         </div>
-        <Button onClick={() => setOpen(true)}>
+        <Button onClick={() => setOpen(true)} className="shrink-0">
           <UserPlus className="h-4 w-4" /> Créer un client
         </Button>
       </div>
@@ -83,16 +83,16 @@ export default function EmployeeClients() {
 
       <Modal open={open} onClose={() => setOpen(false)} title="Créer un client et ouvrir un compte">
         <form onSubmit={submit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Prénom"><input required className="input" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} /></Field>
             <Field label="Nom"><input required className="input" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} /></Field>
           </div>
           <Field label="E-mail"><input type="email" required className="input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Mot de passe initial"><input required minLength={8} className="input" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} /></Field>
             <Field label="Téléphone"><input className="input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></Field>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid gap-4 sm:grid-cols-2">
             <Field label="Ville"><input className="input" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} /></Field>
             <Field label="Dépôt initial (XAF)"><input type="number" min={0} className="input" value={form.initialDeposit} onChange={(e) => setForm({ ...form, initialDeposit: e.target.value })} /></Field>
           </div>

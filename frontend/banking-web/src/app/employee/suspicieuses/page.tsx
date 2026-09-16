@@ -78,12 +78,12 @@ export default function EmployeeSuspicious() {
                   <span className="rounded-lg bg-navy-900 px-2.5 py-1 text-xs font-black text-white">Score {a.riskScore ?? '—'}</span>
                   <Badge className={ALERT_STATUS_STYLES[a.status]}>{ALERT_STATUS_LABELS[a.status]}</Badge>
                 </div>
-                <div className="flex gap-2">
-                  <Button onClick={() => setTxId(a.transactionId)}>
+                <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+                  <Button onClick={() => setTxId(a.transactionId)} className="flex-1 sm:flex-none">
                     <ArrowUpRight className="h-4 w-4" /> Examiner
                   </Button>
                   {['OPEN', 'UNDER_REVIEW'].includes(a.status) && (
-                    <Button variant="warning" onClick={() => escalate(a.id)}>
+                    <Button variant="warning" onClick={() => escalate(a.id)} className="flex-1 sm:flex-none">
                       Escalader
                     </Button>
                   )}

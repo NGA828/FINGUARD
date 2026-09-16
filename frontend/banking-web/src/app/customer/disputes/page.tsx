@@ -42,11 +42,11 @@ export default function CustomerDisputes() {
 
   return (
     <PageIn className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-slate-500">
           Signalez une transaction non autorisée ou incorrecte : notre équipe investigate chaque litige.
         </p>
-        <Button onClick={openModal}>
+        <Button onClick={openModal} className="shrink-0">
           <Flag className="h-4 w-4" /> Signaler une transaction
         </Button>
       </div>

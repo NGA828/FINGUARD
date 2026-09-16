@@ -102,8 +102,10 @@ export default function EmployeeDashboard() {
                   </p>
                   <p className="text-[11px] text-slate-400">{formatDateTime(t.createdAt)} · {t.reference}</p>
                 </div>
-                <TxStatusBadge status={t.status} />
-                <p className="w-28 text-right text-[13px] font-black text-slate-700">{formatXAF(t.amount)}</p>
+                <div className="hidden sm:block">
+                  <TxStatusBadge status={t.status} />
+                </div>
+                <p className="w-24 text-right text-[13px] font-black text-slate-700 sm:w-28">{formatXAF(t.amount)}</p>
               </motion.div>
             ))
           )}

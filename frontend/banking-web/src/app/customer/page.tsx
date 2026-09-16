@@ -68,11 +68,11 @@ export default function CustomerDashboard() {
                 Détecté comme inhabituel par le moteur de fraude (réf. {tx.reference}). Avez-vous initié cette opération ?
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="dark" onClick={() => confirm(tx, true)}>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button variant="dark" className="w-full sm:w-auto" onClick={() => confirm(tx, true)}>
                 C’est moi, confirmer
               </Button>
-              <Button variant="danger" onClick={() => confirm(tx, false)}>
+              <Button variant="danger" className="w-full sm:w-auto" onClick={() => confirm(tx, false)}>
                 Je ne reconnais pas
               </Button>
             </div>
@@ -96,7 +96,7 @@ export default function CustomerDashboard() {
                 <LiveDot />
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Solde total disponible</p>
               </div>
-              <p className="mt-3 text-5xl font-black tracking-tight">
+              <p className="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
                 {loading ? '…' : formatXAF(data?.balance ?? 0)}
               </p>
               <p className="mt-2 text-xs text-slate-400">

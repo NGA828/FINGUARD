@@ -40,7 +40,7 @@ export default function AdminAudit() {
           <div className="divide-y divide-slate-100">
             {data.map((l: any, i: number) => (
               <motion.div key={l.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: Math.min(i * 0.02, 0.3) }} className="flex flex-wrap items-center gap-4 px-5 py-3">
-                <div className="w-40 shrink-0">
+                <div className="w-full shrink-0 sm:w-40">
                   <p className="text-[11px] font-black text-slate-400">{formatDateTime(l.createdAt)}</p>
                 </div>
                 <span className="rounded-md bg-navy-900 px-2 py-0.5 text-[10px] font-black tracking-wide text-white">{l.action}</span>
