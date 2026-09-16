@@ -142,3 +142,47 @@ centrés sur le solde et les actions rapides ; vues de détection de fraude data
 scores, indicateurs et alertes rouge/orange ; animations Framer Motion (révélations au scroll,
 compteurs, transitions de pages, modales spring, toasts) et images générées sur mesure
 (`frontend/banking-web/public/images/`).
+
+---
+
+## 7. Fonctionnalités complémentaires
+
+### 👥 Bénéficiaires (client)
+- CRUD complet : `GET/POST /api/customer/beneficiaries`, `DELETE /api/customer/beneficiaries/:id`
+  (unicité client + numéro de compte, refus de doublon en `409`).
+- Page **« Mes bénéficiaires »** (cartes animées, ajout en modale, retrait avec confirmation).
+- Lors d'un virement, la modale « Nouvelle transaction » propose la **sélection d'un
+  bénéficiaire enregistré** pour pré-remplir le compte destinataire.
+
+### 📄 Relevés de compte (export CSV)
+- `GET /api/customer/accounts/:id/statement` et `GET /api/employee/accounts/:id/statement`
+  → fichier CSV `;` avec BOM UTF-8 (compatible Excel) :
+  `Date;Référence;Type;Description;Sens;Montant (XAF);Statut`.
+- Boutons de téléchargement : tableau de bord client (chaque compte), page
+  « Mes transactions », et fiche client côté employé.
+
+### 📊 Exports administrateur
+- `GET /api/admin/reports/transactions.csv` — toutes les transactions du système,
+  filtrables par statut/type/période.
+- `GET /api/admin/reports/audit.csv` — journal d'audit exportable.
+- Carte « Exports CSV » dans **Rapports système** (filtres statut/type).
+
+### 🧪 Simulateur de fraude (employé)
+- `POST /api/employee/transactions/simulate` — évalue le score de risque d'une opération
+  fictive **sans mouvement de fonds ni écriture en base** (journalisé en audit).
+- Bannière + modale interactive sur le tableau de bord employé : compte, type, montant →
+  score /100, jauge animée, indicateurs déclenchés et décision automatique du moteur.
+
+### 📈 Graphique de dépenses (client)
+- Le tableau de bord client affiche la **répartition des dépenses sortantes (30 jours)**
+  par type d'opération (donut Recharts + légende avec pourcentages).
+
+### 📚 Documentation Swagger
+- Disponible sur `http://localhost:4000/api/docs` (JSON : `/api/docs-json`).
+
+### ✅ Tests de bout en bout
+- `cd backend/banking-api && npm run test:e2e` — 10 scénarios contre l'API en fonctionnement :
+  authentification, RBAC croisé (client ↔ employé ↔ admin), petit dépôt autorisé, gros
+  virement mis en revue puis approuvé, rejet au-delà de la limite par transaction, CRUD
+  bénéficiaires + doublon, relevés CSV (dont accès interdit au compte d'autrui), simulation
+  sans mouvement de fonds, attribution de rôle admin.

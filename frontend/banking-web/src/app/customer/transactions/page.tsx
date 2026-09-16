@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ShieldCheck, Sparkles } from 'lucide-react';
-import { api } from '@/lib/api';
+import { FileDown, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { api, downloadFile } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatXAF } from '@/lib/format';
 import { RISK_LABELS, TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
@@ -26,6 +26,20 @@ export default function CustomerTransactions() {
   const [open, setOpen] = useState(false);
   const [txOpen, setTxOpen] = useState(false);
   const { push } = useToast();
+  const { data: accounts } = useApi(() => api.get('/customer/accounts'));
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  const downloadStatement = async (a: any) => {
+    setDownloadingId(a.id);
+    try {
+      await downloadFile(`/customer/accounts/${a.id}/statement`, `releve-${a.accountNumber}.csv`);
+      push(`Relevé du compte ${a.accountNumber} téléchargé.`, 'success');
+    } catch (e: any) {
+      push(e.message, 'error');
+    } finally {
+      setDownloadingId(null);
+    }
+  };
 
   const openDetail = async (id: string) => {
     const d = await api.get(`/customer/transactions/${id}`);
@@ -82,6 +96,29 @@ export default function CustomerTransactions() {
           </label>
         </div>
       </Card>
+
+      {/* Relevés de compte (export CSV) */}
+      {!!accounts?.length && (
+        <Card className="flex flex-wrap items-center gap-3 p-4">
+          <span className="flex items-center gap-2 text-[13px] font-black text-navy-900">
+            <FileDown className="h-4 w-4 text-brand-600" /> Relevés de compte
+          </span>
+          <span className="hidden text-[11px] text-slate-400 sm:inline">Téléchargez l'historique complet au format CSV (compatible Excel).</span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            {accounts.map((a: any) => (
+              <Button
+                key={a.id}
+                variant="secondary"
+                loading={downloadingId === a.id}
+                onClick={() => downloadStatement(a)}
+                className="px-3 py-2 text-xs"
+              >
+                <FileDown className="h-3.5 w-3.5" /> {a.accountNumber}
+              </Button>
+            ))}
+          </div>
+        </Card>
+      )}
 
       {/* Liste */}
       <Card>

@@ -55,8 +55,22 @@ model Customer {
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
 
-  accounts Account[]
-  disputes Dispute[]
+  accounts      Account[]
+  disputes      Dispute[]
+  beneficiaries Beneficiary[]
+}
+
+model Beneficiary {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name          String
+  accountNumber String
+  bankLabel     String?
+  createdAt     DateTime @default(now())
+
+  @@unique([customerId, accountNumber])
+  @@index([customerId])
 }
 
 model Employee {

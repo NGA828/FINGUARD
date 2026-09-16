@@ -38,9 +38,39 @@ async function request<T = any>(path: string, options: { method?: string; body?:
   return data as T;
 }
 
+/**
+ * Télécharge un fichier (export CSV) via le proxy /api, avec le jeton JWT.
+ * Déclenche l'enregistrement dans le navigateur.
+ */
+export async function downloadFile(path: string, fallbackName = 'export.csv'): Promise<void> {
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`/api${path}`, { headers });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    throw new ApiError(data?.message || 'Le téléchargement a échoué.', res.status);
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') || '';
+  const match = disposition.match(/filename="?([^";]+)"?/);
+  const filename = match?.[1] || fallbackName;
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
 export const api = {
   get: (path: string) => request(path),
   post: (path: string, body?: any) => request(path, { method: 'POST', body }),
   patch: (path: string, body?: any) => request(path, { method: 'PATCH', body }),
   put: (path: string, body?: any) => request(path, { method: 'PUT', body }),
+  del: (path: string) => request(path, { method: 'DELETE' }),
 };

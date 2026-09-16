@@ -20,6 +20,7 @@ import {
   ScrollText,
   UserRound,
   Scale,
+  HeartHandshake,
   X,
 } from 'lucide-react';
 import { useAuth, roleHome } from '@/lib/auth';
@@ -39,6 +40,7 @@ export interface NavItem {
 export const CUSTOMER_NAV: NavItem[] = [
   { href: '/customer', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
   { href: '/customer/transactions', label: 'Transactions', icon: ArrowLeftRight },
+  { href: '/customer/beneficiaries', label: 'Bénéficiaires', icon: HeartHandshake },
   { href: '/customer/disputes', label: 'Litiges', icon: Scale },
   { href: '/customer/profil', label: 'Mon profil', icon: UserRound },
 ];

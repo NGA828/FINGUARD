@@ -7,6 +7,7 @@ import AppShell from '@/components/AppShell';
 const titles: Record<string, string> = {
   '/customer': 'Tableau de bord',
   '/customer/transactions': 'Mes transactions',
+  '/customer/beneficiaries': 'Mes bénéficiaires',
   '/customer/disputes': 'Mes litiges',
   '/customer/profil': 'Mon profil & sécurité',
 };

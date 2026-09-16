@@ -94,6 +94,28 @@ export function StatusPieChart({ data }: { data: any[] }) {
   );
 }
 
+/** Répartition des dépenses du client (30 jours) par type d'opération. */
+export function SpendingDonut({ data }: { data: { name: string; value: number; key: string }[] }) {
+  const colors: Record<string, string> = {
+    WITHDRAWAL: '#f43f5e',
+    TRANSFER: '#0ea5e9',
+    PAYMENT: '#8b5cf6',
+    DEPOSIT: '#10b981',
+  };
+  return (
+    <ResponsiveContainer width="100%" height={210}>
+      <PieChart>
+        <Pie data={data} dataKey="value" nameKey="name" innerRadius={52} outerRadius={80} paddingAngle={4} animationDuration={900}>
+          {data.map((d, i) => (
+            <Cell key={i} fill={colors[d.key] || '#94a3b8'} />
+          ))}
+        </Pie>
+        <Tooltip contentStyle={tooltipStyle} formatter={(v: any) => formatXAF(v)} />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
 export function RiskDonut({ data }: { data: { LOW: number; MEDIUM: number; HIGH: number } }) {
   const rows = [
     { level: 'LOW', value: data.LOW },

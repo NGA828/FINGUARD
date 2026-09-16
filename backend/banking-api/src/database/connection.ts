@@ -42,16 +42,19 @@ export function resetDatabase() {
   initSchema();
 }
 
+// node:sqlite refuse `undefined` comme paramètre ; on le normalise en NULL.
+const clean = (params: any[]) => params.map((p) => (p === undefined ? null : p));
+
 export function query<T = any>(sql: string, params: any[] = []): T[] {
-  return getConnection().prepare(sql).all(...params) as T[];
+  return getConnection().prepare(sql).all(...clean(params)) as T[];
 }
 
 export function one<T = any>(sql: string, params: any[] = []): T | null {
-  return (getConnection().prepare(sql).get(...params) as T) ?? null;
+  return (getConnection().prepare(sql).get(...clean(params)) as T) ?? null;
 }
 
 export function run(sql: string, params: any[] = []): void {
-  getConnection().prepare(sql).run(...params);
+  getConnection().prepare(sql).run(...clean(params));
 }
 
 /** Exécute un bloc dans une transaction SQL (atomicité des opérations bancaires). */
@@ -162,3 +165,4 @@ export const notifications = new Repo('notifications');
 export const auditLogs = new Repo('audit_logs');
 export const systemConfig = new Repo('system_config', 'key');
 export const fraudRules = new Repo('fraud_rules');
+export const beneficiaries = new Repo('beneficiaries');

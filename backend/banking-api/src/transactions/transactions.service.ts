@@ -7,6 +7,7 @@ import {
   fraudAlerts,
   notifications,
   query,
+  rowToCamel,
   systemConfig,
   transactions,
   tx,
@@ -356,7 +357,7 @@ export class TransactionsService {
   // Vérification par le client (risque moyen)
   // ------------------------------------------------------------------
 
-  customerConfirm(userId: string, txId: string, legitimate: boolean, meta?: any) {
+  async customerConfirm(userId: string, txId: string, legitimate: boolean, meta?: any) {
     const transaction = transactions.byId(txId);
     if (!transaction) throw new NotFoundException('Transaction introuvable.');
     if (transaction.status !== 'PENDING' || !transaction.requiresVerification) {
@@ -377,7 +378,7 @@ export class TransactionsService {
         description: `Client a confirmé la transaction réf. ${transaction.reference}`,
         ...meta,
       });
-      const completed = this.complete(txId, userId, meta);
+      const completed = await this.complete(txId, userId, meta);
       return this.enrich(completed);
     }
 
@@ -420,10 +421,10 @@ export class TransactionsService {
   // Révision par les employés (risque élevé)
   // ------------------------------------------------------------------
 
-  employeeApprove(userId: string, txId: string, notes: string | undefined, meta?: any) {
+  async employeeApprove(userId: string, txId: string, notes: string | undefined, meta?: any) {
     this.assertReviewable(txId);
     if (notes) this.appendAlertNotes(txId, userId, `Approbation : ${notes}`);
-    const completed = this.complete(txId, userId, meta);
+    const completed = await this.complete(txId, userId, meta);
     this.resolveOpenAlerts(txId, 'APPROVED', notes);
     return this.enrich(completed);
   }
@@ -594,6 +595,67 @@ export class TransactionsService {
 
   private shapeTx(t: any) {
     return { ...t, amount: Number(t.amount), riskScore: t.riskScore ?? null };
+  }
+
+  /**
+   * Relevé de compte : toutes les transactions touchant le compte,
+   * avec sens (débit/crédit) pour l'export CSV (cahier des charges §16).
+   */
+  statement(accountId: string) {
+    const account = accounts.byId(accountId);
+    if (!account) throw new NotFoundException('Compte introuvable.');
+    const rows = query(
+      `SELECT * FROM transactions
+       WHERE (source_account_id = ? OR target_account_id = ?)
+       ORDER BY created_at DESC`,
+      [accountId, accountId],
+    ).map((raw: any) => {
+      const t = this.shapeTx(rowToCamel(raw));
+      const isDebit = raw.source_account_id === accountId;
+      return {
+        ...t,
+        direction: isDebit ? 'DEBIT' : 'CREDIT',
+      };
+    });
+    return { account: { id: account.id, accountNumber: account.accountNumber, balance: Number(account.balance) }, rows };
+  }
+
+  /**
+   * Export administrateur : toutes les transactions du système avec les
+   * numéros de compte source/cible, pour les rapports CSV (§16, §22).
+   */
+  exportAll(filters: { status?: string; type?: string; from?: string; to?: string } = {}) {
+    const where: string[] = [];
+    const params: any[] = [];
+    if (filters.status) {
+      where.push('t.status = ?');
+      params.push(filters.status);
+    }
+    if (filters.type) {
+      where.push('t.type = ?');
+      params.push(filters.type);
+    }
+    if (filters.from) {
+      where.push('t.created_at >= ?');
+      params.push(`${filters.from}T00:00:00`);
+    }
+    if (filters.to) {
+      where.push('t.created_at <= ?');
+      params.push(`${filters.to}T23:59:59`);
+    }
+    const rows = query(
+      `SELECT t.*, sa.account_number AS source_number, ta.account_number AS target_number
+       FROM transactions t
+       LEFT JOIN accounts sa ON sa.id = t.source_account_id
+       LEFT JOIN accounts ta ON ta.id = t.target_account_id
+       ${where.length ? 'WHERE ' + where.join(' AND ') : ''}
+       ORDER BY t.created_at DESC`,
+      params,
+    ).map((raw: any) => {
+      const t = this.shapeTx(rowToCamel(raw));
+      return { ...t, sourceNumber: raw.source_number ?? '—', targetNumber: raw.target_number ?? '—' };
+    });
+    return rows;
   }
 
   private enrich(t: any) {

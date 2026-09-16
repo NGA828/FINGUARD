@@ -1,14 +1,17 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { CurrentUser, JwtAuthGuard, RequestMeta, Roles, RolesGuard } from '../common/guards';
 import { AccountsService } from '../accounts/accounts.service';
-import { TransactionsService } from '../transactions/transactions.service';
+import { TransactionsService, TX_TYPE_LABELS } from '../transactions/transactions.service';
 import { DisputesService } from '../disputes/disputes.service';
 import { AlertsService } from '../alerts/alerts.service';
 import { CustomersService, CreateCustomerDto } from '../customers/customers.service';
 import { FraudService } from '../fraud/fraud.service';
 import { ReportsService } from '../reports/reports.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { customers, fraudAlerts, query, users } from '../database/connection';
+import { AuditService } from '../audit/audit.service';
+import { accounts as accountsRepo, customers, fraudAlerts, query, users } from '../database/connection';
+import { nowIso } from '../common/utils';
 import {
   IsBoolean,
   IsEmail,
@@ -72,6 +75,16 @@ export class ResolveAlertDto {
   @IsOptional() @IsString() notes?: string;
 }
 
+export class SimulateFraudDto {
+  @IsString() @IsNotEmpty({ message: 'Le compte est requis.' }) accountId: string;
+  @IsIn(['DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'PAYMENT'], { message: 'Type de transaction invalide.' })
+  type: 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER' | 'PAYMENT';
+  @IsNumber({}, { message: 'Le montant doit être un nombre.' })
+  @Min(1, { message: 'Le montant doit être supérieur à 0.' })
+  @Max(100000000, { message: 'Montant trop élevé.' })
+  amount: number;
+}
+
 /**
  * Espace EMPLOYÉ — opérations bancaires, revue des transactions suspectes,
  * litiges, gestion des clients et comptes.
@@ -89,6 +102,7 @@ export class EmployeeController {
     private readonly fraud: FraudService,
     private readonly reports: ReportsService,
     private readonly notify: NotificationsService,
+    private readonly audit: AuditService,
   ) {}
 
   // ------------------------------------------------------------------
@@ -194,6 +208,27 @@ export class EmployeeController {
     return this.accounts.unfreeze(id, user.sub, meta);
   }
 
+  @Get('accounts/:id/statement')
+  accountStatement(@Param('id') id: string, @Res() res: Response) {
+    const { account, rows } = this.transactions.statement(id);
+    const header = 'Date;Référence;Type;Description;Sens;Montant (XAF);Statut';
+    const lines = rows.map((t: any) =>
+      [
+        new Date(t.createdAt).toISOString(),
+        t.reference,
+        TX_TYPE_LABELS[t.type] ?? t.type,
+        `"${(t.description || '').replace(/"/g, '""')}"`,
+        t.direction === 'DEBIT' ? 'Débit' : 'Crédit',
+        t.amount,
+        t.status,
+      ].join(';'),
+    );
+    const csv = '\ufeff' + [header, ...lines].join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=releve-${account.accountNumber}.csv`);
+    return res.send(csv);
+  }
+
   // ------------------------------------------------------------------
   // Transactions
   // ------------------------------------------------------------------
@@ -220,6 +255,29 @@ export class EmployeeController {
   @Post('transactions/:id/hold')
   hold(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: ReviewDto, @RequestMeta() meta: any) {
     return this.transactions.employeeHold(user.sub, id, dto.notes, meta);
+  }
+
+  /**
+   * Simulateur de fraude : évalue le score de risque d'une transaction
+   * fictive sans aucun mouvement de fonds ni écriture en base.
+   */
+  @Post('transactions/simulate')
+  simulateFraud(@CurrentUser() user: any, @Body() dto: SimulateFraudDto, @RequestMeta() meta: any) {
+    const account = accountsRepo.byId(dto.accountId);
+    if (!account) throw new NotFoundException('Compte introuvable.');
+    const result = this.fraud.analyze(
+      { id: 'simulation', amount: dto.amount, type: dto.type, createdAt: nowIso(), sourceAccountId: account.id },
+      account,
+    );
+    this.audit.record({
+      userId: user.sub,
+      action: 'FRAUD_SIMULATION',
+      entity: 'ACCOUNT',
+      entityId: account.id,
+      description: `Simulation de fraude (${dto.type}, ${dto.amount} XAF) sur le compte ${account.accountNumber} → risque ${result.riskLevel}`,
+      ...meta,
+    });
+    return { simulation: true, amount: dto.amount, type: dto.type, accountNumber: account.accountNumber, analysis: result };
   }
 
   // ------------------------------------------------------------------

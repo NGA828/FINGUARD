@@ -21,6 +21,7 @@ import { CustomersService } from './customers/customers.service';
 import { EmployeesService } from './employees/employees.service';
 import { ReportsService } from './reports/reports.service';
 import { AdministrationService } from './administration/administration.service';
+import { BeneficiariesService } from './beneficiaries/beneficiaries.service';
 import { AuditService } from './audit/audit.service';
 
 @Module({
@@ -40,6 +41,7 @@ import { AuditService } from './audit/audit.service';
     EmployeesService,
     ReportsService,
     AdministrationService,
+    BeneficiariesService,
   ],
 })
 export class AppModule {}

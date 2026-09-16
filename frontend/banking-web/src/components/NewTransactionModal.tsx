@@ -37,6 +37,7 @@ export default function NewTransactionModal({
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
+  const [savedBeneficiaries, setSavedBeneficiaries] = useState<any[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -44,6 +45,7 @@ export default function NewTransactionModal({
         setAccounts(a);
         if (a.length) setAccountId((prev) => prev || a[0].id);
       });
+      api.get('/customer/beneficiaries').then(setSavedBeneficiaries).catch(() => setSavedBeneficiaries([]));
       if (initialType) setType(initialType);
       setResult(null);
       setAmount('');
@@ -149,9 +151,30 @@ export default function NewTransactionModal({
           </Field>
 
           {type === 'TRANSFER' && (
-            <Field label="Compte bénéficiaire">
-              <input required value={target} onChange={(e) => setTarget(e.target.value)} placeholder="FG-10000106" className="input" />
-            </Field>
+            <>
+              {savedBeneficiaries.length > 0 && (
+                <Field label="Bénéficiaire enregistré" hint="Sélectionnez un bénéficiaire pour pré-remplir le compte.">
+                  <select
+                    value={savedBeneficiaries.find((b) => b.accountNumber === target)?.id || ''}
+                    onChange={(e) => {
+                      const b = savedBeneficiaries.find((x) => x.id === e.target.value);
+                      if (b) setTarget(b.accountNumber);
+                    }}
+                    className="input"
+                  >
+                    <option value="">— Choisir dans ma liste —</option>
+                    {savedBeneficiaries.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} · {b.accountNumber}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+              )}
+              <Field label="Compte bénéficiaire">
+                <input required value={target} onChange={(e) => setTarget(e.target.value)} placeholder="FG-10000106" className="input" />
+              </Field>
+            </>
           )}
           {type === 'PAYMENT' && (
             <Field label="Bénéficiaire / commerçant">

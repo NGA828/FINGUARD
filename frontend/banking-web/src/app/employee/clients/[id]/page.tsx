@@ -2,8 +2,8 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Snowflake, Sun } from 'lucide-react';
-import { api } from '@/lib/api';
+import { ArrowLeft, FileDown, Snowflake, Sun } from 'lucide-react';
+import { api, downloadFile } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatDate, formatXAF, initials } from '@/lib/format';
 import { ACCOUNT_STATUS_STYLES, ACCOUNT_STATUS_LABELS, TX_STATUS_LABELS } from '@/lib/labels';
@@ -67,9 +67,22 @@ export default function EmployeeClientDetail() {
                 Limites : {formatXAF(a.perTxLimit)} / opération · {formatXAF(a.dailyLimit)} / jour
               </p>
               {a.frozenReason && <p className="mt-2 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-700">❄️ {a.frozenReason}</p>}
-              <Button variant={a.status === 'FROZEN' ? 'primary' : 'secondary'} onClick={() => freeze(a)} className="mt-4 w-full">
-                {a.status === 'FROZEN' ? (<><Sun className="h-4 w-4" /> Dégeler le compte</>) : (<><Snowflake className="h-4 w-4" /> Geler le compte</>)}
-              </Button>
+              <div className="mt-4 grid gap-2">
+                <Button variant={a.status === 'FROZEN' ? 'primary' : 'secondary'} onClick={() => freeze(a)} className="w-full">
+                  {a.status === 'FROZEN' ? (<><Sun className="h-4 w-4" /> Dégeler le compte</>) : (<><Snowflake className="h-4 w-4" /> Geler le compte</>)}
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full border border-slate-200 text-slate-600"
+                  onClick={() =>
+                    downloadFile(`/employee/accounts/${a.id}/statement`, `releve-${a.accountNumber}.csv`)
+                      .then(() => push(`Relevé du compte ${a.accountNumber} téléchargé.`, 'success'))
+                      .catch((e) => push(e.message, 'error'))
+                  }
+                >
+                  <FileDown className="h-4 w-4" /> Relevé CSV
+                </Button>
+              </div>
             </Card>
           </motion.div>
         ))}

@@ -1,22 +1,50 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeftRight, Scale, ShieldAlert, Users, Wallet, Activity } from 'lucide-react';
+import { ArrowLeftRight, FlaskConical, Scale, ShieldAlert, Users, Wallet, Activity } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatXAF } from '@/lib/format';
 import { ALERT_STATUS_STYLES, ALERT_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
-import { Badge, Card, SkeletonRows, StatCard, TxStatusBadge } from '@/components/ui';
+import { Badge, Button, Card, SkeletonRows, StatCard, TxStatusBadge } from '@/components/ui';
 import { PageIn } from '@/components/motion';
 import { VolumeAreaChart } from '@/components/charts';
 import TxRowIcon from '@/components/TxRowIcon';
+import FraudSimulatorModal from '@/components/FraudSimulatorModal';
 
 export default function EmployeeDashboard() {
   const { data, loading } = useApi(() => api.get('/employee/dashboard'));
+  const [simOpen, setSimOpen] = useState(false);
 
   return (
     <PageIn className="space-y-6">
+      {/* Simulateur de fraude */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-950 via-navy-900 to-brand-900 p-6 text-white shadow-xl"
+      >
+        <div className="bg-grid-dark absolute inset-0" />
+        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full bg-brand-500/25 blur-3xl" />
+        <div className="relative flex flex-wrap items-center gap-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
+            <FlaskConical className="h-6 w-6 text-brand-300" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[15px] font-black">Simulateur de fraude</p>
+            <p className="mt-0.5 max-w-xl text-xs leading-relaxed text-slate-300">
+              Testez le moteur de détection sur une opération fictive : score de risque, indicateurs déclenchés et
+              décision automatique — sans aucun mouvement de fonds.
+            </p>
+          </div>
+          <Button variant="glass" onClick={() => setSimOpen(true)}>
+            <FlaskConical className="h-4 w-4" /> Lancer une simulation
+          </Button>
+        </div>
+      </motion.div>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<Users className="h-5 w-5" />} label="Total clients" value={data?.stats?.totalCustomers ?? 0} delay={0} />
         <StatCard icon={<Wallet className="h-5 w-5" />} label="Comptes actifs" value={data?.stats?.activeAccounts ?? 0} accent="text-sky-600 bg-sky-50" delay={0.05} />
@@ -111,6 +139,8 @@ export default function EmployeeDashboard() {
           )}
         </div>
       </Card>
+
+      <FraudSimulatorModal open={simOpen} onClose={() => setSimOpen(false)} />
     </PageIn>
   );
 }

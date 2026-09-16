@@ -1,18 +1,45 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3 } from 'lucide-react';
-import { api } from '@/lib/api';
+import { BarChart3, FileDown, ScrollText } from 'lucide-react';
+import { api, downloadFile } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
-import { Card, Skeleton } from '@/components/ui';
+import { Button, Card, Skeleton } from '@/components/ui';
 import { PageIn } from '@/components/motion';
 import PageHero from '@/components/PageHero';
 import { StatusPieChart, TypeBarChart, VolumeAreaChart } from '@/components/charts';
 import { formatXAF } from '@/lib/format';
+import { TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
+import { useToast } from '@/components/toast';
 
 export default function AdminReports() {
   const { data, loading } = useApi(() => api.get('/admin/reports/summary?days=30'));
   const employees = useApi(() => api.get('/admin/employees'));
+  const { push } = useToast();
+  const [exportStatus, setExportStatus] = useState('');
+  const [exportType, setExportType] = useState('');
+  const [exporting, setExporting] = useState<'tx' | 'audit' | null>(null);
+
+  const exportCsv = async (kind: 'tx' | 'audit') => {
+    setExporting(kind);
+    try {
+      if (kind === 'tx') {
+        const qs = new URLSearchParams();
+        if (exportStatus) qs.set('status', exportStatus);
+        if (exportType) qs.set('type', exportType);
+        const suffix = qs.toString() ? `?${qs}` : '';
+        await downloadFile(`/admin/reports/transactions.csv${suffix}`, 'transactions-finguard.csv');
+      } else {
+        await downloadFile('/admin/reports/audit.csv', 'audit-finguard.csv');
+      }
+      push('Export CSV téléchargé avec succès.', 'success');
+    } catch (e: any) {
+      push(e.message, 'error');
+    } finally {
+      setExporting(null);
+    }
+  };
 
   return (
     <PageIn className="space-y-6">
@@ -36,6 +63,40 @@ export default function AdminReports() {
           <p className="mt-2 text-2xl font-black text-navy-900">{data?.overview?.auditEventsLast7d ?? '…'}</p>
         </Card>
       </div>
+
+      {/* Exports CSV */}
+      <Card className="p-5">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="flex items-center gap-2 text-sm font-black text-navy-900">
+              <FileDown className="h-4 w-4 text-brand-600" /> Exports CSV
+            </p>
+            <p className="mt-0.5 text-xs text-slate-400">
+              Téléchargez les données brutes pour Excel : toutes les transactions du système ou le journal d'audit.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <select value={exportStatus} onChange={(e) => setExportStatus(e.target.value)} className="input w-auto py-2 text-xs">
+              <option value="">Tous les statuts</option>
+              {Object.entries(TX_STATUS_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <select value={exportType} onChange={(e) => setExportType(e.target.value)} className="input w-auto py-2 text-xs">
+              <option value="">Tous les types</option>
+              {Object.entries(TX_TYPE_LABELS).map(([k, v]) => (
+                <option key={k} value={k}>{v}</option>
+              ))}
+            </select>
+            <Button loading={exporting === 'tx'} onClick={() => exportCsv('tx')} className="px-3 py-2 text-xs">
+              <FileDown className="h-3.5 w-3.5" /> Transactions
+            </Button>
+            <Button variant="secondary" loading={exporting === 'audit'} onClick={() => exportCsv('audit')} className="px-3 py-2 text-xs">
+              <ScrollText className="h-3.5 w-3.5" /> Journal d'audit
+            </Button>
+          </div>
+        </div>
+      </Card>
 
       <Card className="p-5">
         <p className="text-sm font-black text-navy-900">Volume quotidien (30 jours)</p>

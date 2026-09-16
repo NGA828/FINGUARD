@@ -165,6 +165,16 @@ CREATE TABLE IF NOT EXISTS fraud_rules (
   updated_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS beneficiaries (
+  id TEXT PRIMARY KEY,
+  customer_id TEXT NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  account_number TEXT NOT NULL,
+  bank_label TEXT,
+  created_at TEXT NOT NULL,
+  UNIQUE (customer_id, account_number)
+);
+
 CREATE INDEX IF NOT EXISTS idx_tx_source ON transactions(source_account_id);
 CREATE INDEX IF NOT EXISTS idx_tx_target ON transactions(target_account_id);
 CREATE INDEX IF NOT EXISTS idx_tx_status ON transactions(status);

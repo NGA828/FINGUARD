@@ -1,5 +1,7 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { CurrentUser, JwtAuthGuard, RequestMeta, Roles, RolesGuard } from '../common/guards';
+import { TransactionsService, TX_TYPE_LABELS } from '../transactions/transactions.service';
 import { AdministrationService } from './administration.service';
 import { EmployeesService, CreateEmployeeDto } from '../employees/employees.service';
 import { CustomersService } from '../customers/customers.service';
@@ -69,6 +71,7 @@ export class AdminController {
     private readonly fraud: FraudService,
     private readonly reports: ReportsService,
     private readonly audit: AuditService,
+    private readonly transactions: TransactionsService,
   ) {}
 
   // ------------------------------------------------------------------
@@ -182,5 +185,53 @@ export class AdminController {
       customersGrowth: this.reports.customersReport(),
       topCustomers: this.reports.topCustomers(10),
     };
+  }
+
+  /** Export CSV de toutes les transactions (filtres optionnels). */
+  @Get('reports/transactions.csv')
+  exportTransactionsCsv(
+    @Query() q: { status?: string; type?: string; from?: string; to?: string },
+    @Res() res: Response,
+  ) {
+    const rows = this.transactions.exportAll({ status: q.status, type: q.type, from: q.from, to: q.to });
+    const header = 'Date;Référence;Type;Compte source;Compte cible;Montant (XAF);Statut';
+    const lines = rows.map((t: any) =>
+      [
+        new Date(t.createdAt).toISOString(),
+        t.reference,
+        TX_TYPE_LABELS[t.type] ?? t.type,
+        t.sourceNumber,
+        t.targetNumber,
+        t.amount,
+        t.status,
+      ].join(';'),
+    );
+    const csv = '\ufeff' + [header, ...lines].join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=transactions-finguard.csv');
+    return res.send(csv);
+  }
+
+  /** Export CSV du journal d'audit. */
+  @Get('reports/audit.csv')
+  exportAuditCsv(@Query() q: { entity?: string; action?: string }, @Res() res: Response) {
+    const rows = this.audit.list({ entity: q.entity, action: q.action, limit: 500 });
+    const header = 'Date;Utilisateur;Rôle;Action;Entité;Description;IP';
+    const esc = (s: any) => `"${String(s ?? '').replace(/"/g, '""')}"`;
+    const lines = rows.map((a: any) =>
+      [
+        new Date(a.createdAt).toISOString(),
+        esc(a.user ? `${a.user.name} (${a.user.email})` : 'Système'),
+        a.user?.role ?? '—',
+        a.action,
+        a.entity ?? '—',
+        esc(a.description),
+        a.ip ?? '—',
+      ].join(';'),
+    );
+    const csv = '\ufeff' + [header, ...lines].join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename=audit-finguard.csv');
+    return res.send(csv);
   }
 }

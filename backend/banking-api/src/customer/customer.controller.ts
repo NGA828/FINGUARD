@@ -1,9 +1,11 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { CurrentUser, JwtAuthGuard, RequestMeta, Roles, RolesGuard } from '../common/guards';
 import { AccountsService } from '../accounts/accounts.service';
-import { TransactionsService } from '../transactions/transactions.service';
+import { TransactionsService, TX_TYPE_LABELS } from '../transactions/transactions.service';
 import { DisputesService } from '../disputes/disputes.service';
 import { CustomersService } from '../customers/customers.service';
+import { BeneficiariesService } from '../beneficiaries/beneficiaries.service';
 import { customers, query } from '../database/connection';
 import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, IsNumber } from 'class-validator';
 
@@ -45,6 +47,16 @@ export class UpdateProfileDto {
   @IsOptional() @IsString() city?: string;
 }
 
+export class AddBeneficiaryDto {
+  @IsString() @IsNotEmpty({ message: 'Le nom du bénéficiaire est requis.' })
+  name: string;
+
+  @IsString() @IsNotEmpty({ message: 'Le numéro de compte est requis.' })
+  accountNumber: string;
+
+  @IsOptional() @IsString() bankLabel?: string;
+}
+
 /**
  * Espace CLIENT — opérations bancaires personnelles.
  * Un client ne peut jamais accéder aux routes /employee/* ou /admin/*.
@@ -58,7 +70,16 @@ export class CustomerController {
     private readonly transactions: TransactionsService,
     private readonly disputes: DisputesService,
     private readonly customersService: CustomersService,
+    private readonly beneficiariesService: BeneficiariesService,
   ) {}
+
+  /** Vérifie que le compte appartient bien au client connecté. */
+  private ownAccount(user: any, accountId: string) {
+    const customer = customers.first('user_id = ?', [user.sub]);
+    if (!customer) return null;
+    const account = this.accounts.getForCustomer(customer.id).find((a: any) => a.id === accountId);
+    return account ?? null;
+  }
 
   // ------------------------------------------------------------------
   // Tableau de bord
@@ -93,14 +114,30 @@ export class CustomerController {
           `SELECT
              COALESCE(SUM(CASE WHEN type='DEPOSIT' THEN amount ELSE 0 END),0) AS deposits,
              COALESCE(SUM(CASE WHEN type='WITHDRAWAL' THEN amount ELSE 0 END),0) AS withdrawals,
-             COALESCE(SUM(CASE WHEN type='TRANSFER' THEN amount ELSE 0 END),0) AS transfers
+             COALESCE(SUM(CASE WHEN type='TRANSFER' THEN amount ELSE 0 END),0) AS transfers,
+             COALESCE(SUM(CASE WHEN type='PAYMENT' THEN amount ELSE 0 END),0) AS payments
            FROM transactions
            WHERE (source_account_id IN (${ph}) OR target_account_id IN (${ph}))
              AND status = 'COMPLETED'
              AND created_at >= DATE('now','-30 days')`,
           [...accountIds, ...accountIds],
         )[0]
-      : { deposits: 0, withdrawals: 0, transfers: 0 };
+      : { deposits: 0, withdrawals: 0, transfers: 0, payments: 0 };
+
+    // Dépenses sortantes (30 jours) par type d'opération — pour le graphique
+    // de répartition du tableau de bord client.
+    const spendingRows = accountIds.length
+      ? query(
+          `SELECT type, COALESCE(SUM(amount),0) AS total
+           FROM transactions
+           WHERE source_account_id IN (${ph})
+             AND status = 'COMPLETED'
+             AND type != 'DEPOSIT'
+             AND created_at >= DATE('now','-30 days')
+           GROUP BY type`,
+          accountIds,
+        )
+      : [];
 
     const securityAlerts = query(
       `SELECT n.* FROM notifications n
@@ -118,7 +155,9 @@ export class CustomerController {
         deposits: Number(totals.deposits),
         withdrawals: Number(totals.withdrawals),
         transfers: Number(totals.transfers),
+        payments: Number(totals.payments),
       },
+      spending: spendingRows.map((r: any) => ({ type: r.type, total: Number(r.total) })),
       securityAlerts,
     };
   }
@@ -192,5 +231,50 @@ export class CustomerController {
   @Patch('profile')
   updateProfile(@CurrentUser() user: any, @Body() dto: UpdateProfileDto) {
     return this.customersService.updateSelf(user.sub, dto);
+  }
+
+  // ------------------------------------------------------------------
+  // Bénéficiaires de virement
+  // ------------------------------------------------------------------
+  @Get('beneficiaries')
+  myBeneficiaries(@CurrentUser() user: any) {
+    return this.beneficiariesService.list(user.sub);
+  }
+
+  @Post('beneficiaries')
+  addBeneficiary(@CurrentUser() user: any, @Body() dto: AddBeneficiaryDto, @RequestMeta() meta: any) {
+    return this.beneficiariesService.add(user.sub, dto);
+  }
+
+  @Delete('beneficiaries/:id')
+  removeBeneficiary(@CurrentUser() user: any, @Param('id') id: string) {
+    return this.beneficiariesService.remove(user.sub, id);
+  }
+
+  // ------------------------------------------------------------------
+  // Relevé de compte (export CSV — cahier des charges §16)
+  // ------------------------------------------------------------------
+  @Get('accounts/:id/statement')
+  myStatement(@CurrentUser() user: any, @Param('id') id: string, @Res() res: Response) {
+    if (!this.ownAccount(user, id)) {
+      return res.status(404).json({ statusCode: 404, message: 'Compte introuvable.' });
+    }
+    const { account, rows } = this.transactions.statement(id);
+    const header = 'Date;Référence;Type;Description;Sens;Montant (XAF);Statut';
+    const lines = rows.map((t: any) =>
+      [
+        new Date(t.createdAt).toISOString(),
+        t.reference,
+        TX_TYPE_LABELS[t.type] ?? t.type,
+        `"${(t.description || '').replace(/"/g, '""')}"`,
+        t.direction === 'DEBIT' ? 'Débit' : 'Crédit',
+        t.amount,
+        t.status,
+      ].join(';'),
+    );
+    const csv = '\ufeff' + [header, ...lines].join('\r\n');
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename=releve-${account.accountNumber}.csv`);
+    return res.send(csv);
   }
 }

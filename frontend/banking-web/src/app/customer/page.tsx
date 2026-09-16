@@ -8,7 +8,9 @@ import {
   ArrowUpRight,
   Clock,
   CreditCard,
+  Download,
   Eye,
+  PieChart,
   Plus,
   Send,
   ShieldAlert,
@@ -16,7 +18,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import { api } from '@/lib/api';
+import { api, downloadFile } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { useAuth } from '@/lib/auth';
 import { formatDateTime, formatXAF } from '@/lib/format';
@@ -26,6 +28,7 @@ import { PageIn, LiveDot } from '@/components/motion';
 import { useToast } from '@/components/toast';
 import NewTransactionModal from '@/components/NewTransactionModal';
 import TxRowIcon from '@/components/TxRowIcon';
+import { SpendingDonut } from '@/components/charts';
 
 export default function CustomerDashboard() {
   const { user } = useAuth();
@@ -153,7 +156,20 @@ export default function CustomerDashboard() {
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-black text-navy-900">{formatXAF(a.balance)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-black text-navy-900">{formatXAF(a.balance)}</p>
+                    <button
+                      title="Télécharger le relevé (CSV)"
+                      onClick={() =>
+                        downloadFile(`/customer/accounts/${a.id}/statement`, `releve-${a.accountNumber}.csv`)
+                          .then(() => push(`Relevé du compte ${a.accountNumber} téléchargé.`, 'success'))
+                          .catch((e) => push(e.message, 'error'))
+                      }
+                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-brand-50 hover:text-brand-600"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
                 </motion.div>
               ))
             )}
@@ -269,7 +285,55 @@ export default function CustomerDashboard() {
           </div>
         </Card>
 
-        <Card className="p-5">
+        <div className="space-y-6">
+          {/* Répartition des dépenses (30 jours) */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-black text-navy-900">Mes dépenses (30 j)</p>
+              <span className="flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700">
+                <PieChart className="h-3 w-3" /> Répartition
+              </span>
+            </div>
+            {(() => {
+              const spending = (data?.spending || [])
+                .map((s: any) => ({ key: s.type, name: TX_TYPE_LABELS[s.type] || s.type, value: s.total }))
+                .filter((s: any) => s.value > 0);
+              if (!spending.length)
+                return <p className="py-10 text-center text-xs text-slate-400">Aucune dépense sortante sur les 30 derniers jours.</p>;
+              const total = spending.reduce((s: number, x: any) => s + x.value, 0);
+              return (
+                <>
+                  <SpendingDonut data={spending} />
+                  <div className="space-y-2">
+                    {spending.map((s: any) => (
+                      <div key={s.key} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2 font-semibold text-slate-600">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{
+                              backgroundColor:
+                                s.key === 'WITHDRAWAL' ? '#f43f5e' : s.key === 'TRANSFER' ? '#0ea5e9' : s.key === 'PAYMENT' ? '#8b5cf6' : '#10b981',
+                            }}
+                          />
+                          {s.name}
+                        </span>
+                        <span className="font-black text-navy-900">
+                          {formatXAF(s.value)} <span className="font-semibold text-slate-400">({Math.round((s.value / total) * 100)}%)</span>
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-xs">
+                      <span className="font-bold text-slate-500">Total dépensé</span>
+                      <span className="font-black text-navy-900">{formatXAF(total)}</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </Card>
+
+          {/* Alertes de sécurité */}
+          <Card className="p-5">
           <p className="text-sm font-black text-navy-900">Alertes de sécurité</p>
           <div className="mt-4 space-y-3">
             {(!data?.securityAlerts || data.securityAlerts.length === 0) && (
@@ -291,7 +355,8 @@ export default function CustomerDashboard() {
               </motion.div>
             ))}
           </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       <NewTransactionModal open={txOpen} onClose={() => setTxOpen(false)} onDone={() => reload(true)} initialType={quickType} />

@@ -9,6 +9,7 @@ import { resetDatabase, tx } from '../src/database/connection';
 import {
   accounts,
   auditLogs,
+  beneficiaries,
   customers,
   disputeNotes,
   disputes,
@@ -225,6 +226,22 @@ async function main() {
     const cEstelleUser = makeUser('CLIENT', 'estelle.fouda@demo.com', 'Client123!', 'Estelle', 'Fouda', '+237 6 91 73 55 02', iso(30, 10));
     const cEstelle = makeCustomer(cEstelleUser.id, { city: 'Douala' }, iso(30, 10));
     const acctEstelle = makeAccount(cEstelle.id, 1730000, 'ACTIVE', { openedAt: iso(30, 11) });
+
+    // Bénéficiaires enregistrés par Jean Kamga (client de démonstration).
+    for (const b of [
+      { name: 'Amina Ndong', account: acctAmina.accountNumber, bankLabel: 'FINGUARD' },
+      { name: 'Paul Essomba', account: acctPaul.accountNumber, bankLabel: 'FINGUARD' },
+      { name: 'Loyer Akwa — SCI Douala', account: acctEstelle.accountNumber, bankLabel: 'FINGUARD' },
+    ]) {
+      beneficiaries.insert({
+        id: uuid(),
+        customerId: cJean.id,
+        name: b.name,
+        accountNumber: b.account,
+        bankLabel: b.bankLabel,
+        createdAt: iso(45, 9),
+      });
+    }
 
     // ---------------------------------------------------------------
     // Historique de Jean Kamga (profil habituel : 5 000 – 150 000 XAF)
