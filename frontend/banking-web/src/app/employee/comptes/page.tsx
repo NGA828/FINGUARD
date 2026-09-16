@@ -2,19 +2,42 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Search, Snowflake, Sun, Wallet } from 'lucide-react';
+import { Search, SlidersHorizontal, Snowflake, Sun, Wallet } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDate, formatXAF } from '@/lib/format';
 import { ACCOUNT_STATUS_LABELS, ACCOUNT_STATUS_STYLES } from '@/lib/labels';
-import { Badge, Button, Card, EmptyState, SkeletonRows } from '@/components/ui';
+import { Badge, Button, Card, EmptyState, Field, Modal, SkeletonRows } from '@/components/ui';
 import { PageIn } from '@/components/motion';
 import { useToast } from '@/components/toast';
+import PageHero from '@/components/PageHero';
 
 export default function EmployeeAccounts() {
   const [q, setQ] = useState('');
   const { data, loading, reload } = useApi(() => api.get(`/employee/accounts?q=${encodeURIComponent(q)}`), [q]);
   const { push } = useToast();
+  const [limitsFor, setLimitsFor] = useState<any>(null);
+  const [limits, setLimits] = useState({ dailyLimit: '', perTxLimit: '' });
+
+  const openLimits = (a: any) => {
+    setLimits({ dailyLimit: String(a.dailyLimit), perTxLimit: String(a.perTxLimit) });
+    setLimitsFor(a);
+  };
+
+  const saveLimits = async (e: any) => {
+    e.preventDefault();
+    try {
+      await api.patch(`/employee/accounts/${limitsFor.id}`, {
+        dailyLimit: Number(limits.dailyLimit),
+        perTxLimit: Number(limits.perTxLimit),
+      });
+      push('Limites du compte mises à jour.', 'success');
+      setLimitsFor(null);
+      reload();
+    } catch (err: any) {
+      push(err.message, 'error');
+    }
+  };
 
   const toggle = async (a: any) => {
     try {
@@ -33,6 +56,12 @@ export default function EmployeeAccounts() {
 
   return (
     <PageIn className="space-y-6">
+      <PageHero
+        icon={Wallet}
+        title="Gestion des comptes"
+        subtitle="Ouvrir, consulter, geler/dégeler et ajuster les limites des comptes clients."
+      />
+
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher par numéro de compte ou propriétaire…" className="input pl-9" />
@@ -56,6 +85,9 @@ export default function EmployeeAccounts() {
                 </div>
                 <p className="text-[13.5px] font-black text-navy-900">{formatXAF(a.balance)}</p>
                 <Badge className={ACCOUNT_STATUS_STYLES[a.status]}>{ACCOUNT_STATUS_LABELS[a.status]}</Badge>
+                <Button variant="secondary" onClick={() => openLimits(a)}>
+                  <SlidersHorizontal className="h-3.5 w-3.5" /> Limites
+                </Button>
                 <Button variant="secondary" onClick={() => toggle(a)}>
                   {a.status === 'FROZEN' ? (<><Sun className="h-3.5 w-3.5" /> Dégeler</>) : (<><Snowflake className="h-3.5 w-3.5" /> Geler</>)}
                 </Button>
@@ -64,6 +96,18 @@ export default function EmployeeAccounts() {
           </div>
         )}
       </Card>
+
+      <Modal open={!!limitsFor} onClose={() => setLimitsFor(null)} title={`Limites — ${limitsFor?.accountNumber || ''}`}>
+        <form onSubmit={saveLimits} className="space-y-4">
+          <Field label="Limite par transaction (XAF)">
+            <input type="number" min={1} required className="input" value={limits.perTxLimit} onChange={(e) => setLimits({ ...limits, perTxLimit: e.target.value })} />
+          </Field>
+          <Field label="Limite quotidienne (XAF)">
+            <input type="number" min={1} required className="input" value={limits.dailyLimit} onChange={(e) => setLimits({ ...limits, dailyLimit: e.target.value })} />
+          </Field>
+          <Button type="submit" className="w-full">Enregistrer les limites</Button>
+        </form>
+      </Modal>
     </PageIn>
   );
 }

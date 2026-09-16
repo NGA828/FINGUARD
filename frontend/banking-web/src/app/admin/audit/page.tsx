@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ScrollText, Search } from 'lucide-react';
+import PageHero from '@/components/PageHero';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime } from '@/lib/format';
@@ -18,6 +19,12 @@ export default function AdminAudit() {
 
   return (
     <PageIn className="space-y-6">
+      <PageHero
+        icon={ScrollText}
+        title="Journaux d'audit"
+        subtitle="Piste d'audit complète : connexions, décisions, gels, configurations — avec IP et appareil."
+        accent="from-amber-500 to-orange-700"
+      />
       <Card className="p-4">
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="relative sm:col-span-2">

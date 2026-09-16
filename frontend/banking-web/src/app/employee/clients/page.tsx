@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Search, UserPlus, Users } from 'lucide-react';
+import PageHero from '@/components/PageHero';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDate, initials } from '@/lib/format';
@@ -37,14 +38,20 @@ export default function EmployeeClients() {
 
   return (
     <PageIn className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un client (nom, e-mail, téléphone)…" className="input pl-9" />
-        </div>
-        <Button onClick={() => setOpen(true)} className="shrink-0">
-          <UserPlus className="h-4 w-4" /> Créer un client
-        </Button>
+      <PageHero
+        icon={Users}
+        title="Gestion des clients"
+        subtitle="Rechercher, créer et suivre les clients et leur activité bancaire."
+        actions={
+          <Button onClick={() => setOpen(true)}>
+            <UserPlus className="h-4 w-4" /> Créer un client
+          </Button>
+        }
+      />
+
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un client (nom, e-mail, téléphone)…" className="input pl-9" />
       </div>
 
       <Card>

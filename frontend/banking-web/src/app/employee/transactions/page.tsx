@@ -13,9 +13,12 @@ import ReviewModal from '@/components/ReviewModal';
 import TxRowIcon from '@/components/TxRowIcon';
 
 export default function EmployeeTransactions() {
-  const [filters, setFilters] = useState({ type: '', status: '', q: '' });
+  const [filters, setFilters] = useState({ type: '', status: '', q: '', from: '', to: '' });
   const { data, loading, reload } = useApi(
-    () => api.get(`/employee/transactions?type=${filters.type}&status=${filters.status}&q=${encodeURIComponent(filters.q)}&limit=80`),
+    () =>
+      api.get(
+        `/employee/transactions?type=${filters.type}&status=${filters.status}&q=${encodeURIComponent(filters.q)}&from=${filters.from}&to=${filters.to}&limit=80`,
+      ),
     [filters],
   );
   const [txId, setTxId] = useState<string | null>(null);
@@ -36,6 +39,16 @@ export default function EmployeeTransactions() {
             <option value="">Tous les statuts</option>
             {Object.entries(TX_STATUS_LABELS).map(([k, v]) => (<option key={k} value={k}>{v}</option>))}
           </select>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            Du
+            <input type="date" value={filters.from} onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value }))} className="input" />
+          </label>
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            Au
+            <input type="date" value={filters.to} onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value }))} className="input" />
+          </label>
         </div>
       </Card>
 

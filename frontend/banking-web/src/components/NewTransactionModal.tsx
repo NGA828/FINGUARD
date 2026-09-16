@@ -16,7 +16,17 @@ const TYPES = [
   { id: 'PAYMENT', label: 'Paiement', icon: CreditCard },
 ];
 
-export default function NewTransactionModal({ open, onClose, onDone }: { open: boolean; onClose: () => void; onDone: () => void }) {
+export default function NewTransactionModal({
+  open,
+  onClose,
+  onDone,
+  initialType,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onDone: () => void;
+  initialType?: string;
+}) {
   const { push } = useToast();
   const [type, setType] = useState('DEPOSIT');
   const [accountId, setAccountId] = useState('');
@@ -34,13 +44,14 @@ export default function NewTransactionModal({ open, onClose, onDone }: { open: b
         setAccounts(a);
         if (a.length) setAccountId((prev) => prev || a[0].id);
       });
+      if (initialType) setType(initialType);
       setResult(null);
       setAmount('');
       setTarget('');
       setBeneficiary('');
       setDescription('');
     }
-  }, [open]);
+  }, [open, initialType]);
 
   const submit = async (e: any) => {
     e.preventDefault();

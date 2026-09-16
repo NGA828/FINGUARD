@@ -105,6 +105,37 @@ export class AccountsService {
     return updated;
   }
 
+  /** Mise à jour des informations autorisées d'un compte (limites). */
+  updateLimits(
+    accountId: string,
+    opts: { dailyLimit?: number; perTxLimit?: number },
+    actorId: string,
+    meta?: any,
+  ) {
+    const account = accounts.byId(accountId);
+    if (!account) throw new NotFoundException('Compte introuvable.');
+    const patch: any = { };
+    if (opts.dailyLimit !== undefined) {
+      if (opts.dailyLimit <= 0) throw new BadRequestException('Limite quotidienne invalide.');
+      patch.dailyLimit = Math.round(opts.dailyLimit);
+    }
+    if (opts.perTxLimit !== undefined) {
+      if (opts.perTxLimit <= 0) throw new BadRequestException('Limite par transaction invalide.');
+      patch.perTxLimit = Math.round(opts.perTxLimit);
+    }
+    if (!Object.keys(patch).length) throw new BadRequestException('Aucune modification fournie.');
+    const updated = accounts.update(accountId, patch);
+    this.audit.record({
+      userId: actorId,
+      action: 'ACCOUNT_UPDATED',
+      entity: 'ACCOUNT',
+      entityId: accountId,
+      description: `Mise à jour des limites du compte ${account.accountNumber}`,
+      ...meta,
+    });
+    return updated;
+  }
+
   search(q?: string) {
     const where: string[] = [];
     const params: any[] = [];

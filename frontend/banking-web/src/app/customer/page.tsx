@@ -32,6 +32,7 @@ export default function CustomerDashboard() {
   const { push } = useToast();
   const { data, loading, reload } = useApi(() => api.get('/customer/dashboard'));
   const [txOpen, setTxOpen] = useState(false);
+  const [quickType, setQuickType] = useState<string | undefined>(undefined);
 
   const pendingVerifications = (data?.recentTransactions || []).filter((t: any) => t.status === 'PENDING');
 
@@ -150,6 +151,49 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
+      {/* Actions rapides */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        {[
+          { t: 'DEPOSIT', label: 'Dépôt', icon: ArrowDownToLine, cls: 'from-emerald-500 to-emerald-700' },
+          { t: 'WITHDRAWAL', label: 'Retrait', icon: ArrowUpFromLine, cls: 'from-rose-500 to-rose-700' },
+          { t: 'TRANSFER', label: 'Virement', icon: Send, cls: 'from-sky-500 to-sky-700' },
+          { t: 'PAYMENT', label: 'Paiement', icon: CreditCard, cls: 'from-violet-500 to-violet-700' },
+        ].map((a, i) => (
+          <motion.button
+            key={a.t}
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.06 }}
+            onClick={() => {
+              setQuickType(a.t);
+              setTxOpen(true);
+            }}
+            className="card card-hover group flex items-center gap-3 p-4 text-left"
+          >
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${a.cls} text-white shadow-md transition group-hover:scale-110`}>
+              <a.icon className="h-4.5 w-4.5 h-5 w-5" />
+            </span>
+            <span className="text-[13.5px] font-black text-navy-900">{a.label}</span>
+          </motion.button>
+        ))}
+        <motion.button
+          whileHover={{ y: -4, scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.34 }}
+          onClick={() => {
+            setQuickType(undefined);
+            setTxOpen(true);
+          }}
+          className="card card-hover col-span-2 flex items-center justify-center gap-2 p-4 text-[13.5px] font-black text-brand-700 sm:col-span-4 lg:col-span-1"
+        >
+          <Plus className="h-4 w-4" /> Autre…
+        </motion.button>
+      </div>
+
       {/* Statistiques */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard icon={<ArrowDownToLine className="h-5 w-5" />} label="Dépôts (30 j)" value={data?.monthlyTotals?.deposits ?? 0} format={(n) => formatXAF(n)} delay={0.05} />
@@ -227,7 +271,7 @@ export default function CustomerDashboard() {
         </Card>
       </div>
 
-      <NewTransactionModal open={txOpen} onClose={() => setTxOpen(false)} onDone={() => reload(true)} />
+      <NewTransactionModal open={txOpen} onClose={() => setTxOpen(false)} onDone={() => reload(true)} initialType={quickType} />
     </PageIn>
   );
 }

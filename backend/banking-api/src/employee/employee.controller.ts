@@ -39,6 +39,11 @@ export class OpenAccountDto {
   @IsOptional() @IsNumber() @Min(0) perTxLimit?: number;
 }
 
+export class UpdateAccountDto {
+  @IsOptional() @IsNumber() @Min(1) dailyLimit?: number;
+  @IsOptional() @IsNumber() @Min(1) perTxLimit?: number;
+}
+
 export class FreezeDto {
   @IsOptional() @IsString() reason?: string;
 }
@@ -177,6 +182,11 @@ export class EmployeeController {
   @Post('accounts/:id/freeze')
   freeze(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: FreezeDto, @RequestMeta() meta: any) {
     return this.accounts.freeze(id, dto.reason, user.sub, meta);
+  }
+
+  @Patch('accounts/:id')
+  updateAccount(@CurrentUser() user: any, @Param('id') id: string, @Body() dto: UpdateAccountDto, @RequestMeta() meta: any) {
+    return this.accounts.updateLimits(id, dto, user.sub, meta);
   }
 
   @Post('accounts/:id/unfreeze')

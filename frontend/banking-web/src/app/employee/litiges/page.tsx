@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Scale, StickyNote } from 'lucide-react';
+import PageHero from '@/components/PageHero';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatXAF } from '@/lib/format';
@@ -43,6 +44,12 @@ export default function EmployeeDisputes() {
 
   return (
     <PageIn className="space-y-6">
+      <PageHero
+        icon={Scale}
+        title="Litiges clients"
+        subtitle="Investiguer, noter, résoudre ou rejeter les litiges soumis par les clients."
+        accent="from-violet-500 to-fuchsia-700"
+      />
       <div className="flex items-center gap-3">
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="input max-w-64">
           <option value="">Tous les statuts</option>

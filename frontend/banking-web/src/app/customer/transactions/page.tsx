@@ -14,11 +14,11 @@ import NewTransactionModal from '@/components/NewTransactionModal';
 import TxRowIcon from '@/components/TxRowIcon';
 
 export default function CustomerTransactions() {
-  const [filters, setFilters] = useState({ type: '', status: '', q: '' });
+  const [filters, setFilters] = useState({ type: '', status: '', q: '', from: '', to: '' });
   const { data, loading, reload } = useApi(
     () =>
       api.get(
-        `/customer/transactions?type=${filters.type}&status=${filters.status}&q=${encodeURIComponent(filters.q)}&limit=60`,
+        `/customer/transactions?type=${filters.type}&status=${filters.status}&q=${encodeURIComponent(filters.q)}&from=${filters.from}&to=${filters.to}&limit=60`,
       ),
     [filters],
   );
@@ -70,6 +70,16 @@ export default function CustomerTransactions() {
               <option key={k} value={k}>{v}</option>
             ))}
           </select>
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            Du
+            <input type="date" value={filters.from} onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value }))} className="input" />
+          </label>
+          <label className="flex items-center gap-2 text-xs font-bold text-slate-500">
+            Au
+            <input type="date" value={filters.to} onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value }))} className="input" />
+          </label>
         </div>
       </Card>
 

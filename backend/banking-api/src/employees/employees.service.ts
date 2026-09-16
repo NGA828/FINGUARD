@@ -26,7 +26,7 @@ export class EmployeesService {
   list() {
     const { query, rowToCamel } = require('../database/connection');
     return query(
-      `SELECT e.*, u.first_name, u.last_name, u.email, u.phone, u.is_active, u.last_login_at, u.created_at AS user_created_at
+      `SELECT e.*, u.first_name, u.last_name, u.email, u.phone, u.is_active, u.role, u.last_login_at, u.created_at AS user_created_at
        FROM employees e
        JOIN users u ON u.id = e.user_id
        ORDER BY u.created_at DESC`,
@@ -40,6 +40,7 @@ export class EmployeesService {
         lastName: row.lastName,
         email: row.email,
         phone: row.phone,
+        role: row.role,
         position: row.position,
         department: row.department,
         isActive: !!row.isActive,
@@ -103,6 +104,19 @@ export class EmployeesService {
     if (dto.position !== undefined) empPatch.position = dto.position;
     if (dto.department !== undefined) empPatch.department = dto.department;
     if (Object.keys(empPatch).length) employees.update(employeeId, empPatch);
+
+    // Attribution de rôle (RBAC) : EMPLOYEE <-> ADMIN, réservé à l'administrateur.
+    if (dto.role !== undefined && ['EMPLOYEE', 'ADMIN'].includes(dto.role) && dto.role !== user.role) {
+      users.update(employee.userId, { role: dto.role, updatedAt: nowIso() });
+      this.audit.record({
+        userId: actorId,
+        action: 'ROLE_ASSIGNED',
+        entity: 'EMPLOYEE',
+        entityId: employeeId,
+        description: `Rôle de ${user.firstName} ${user.lastName} changé en ${dto.role}`,
+        ...meta,
+      });
+    }
 
     const actions: string[] = [];
     if (dto.isActive === true) actions.push('ACTIVATION');

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Power, Search, Users } from 'lucide-react';
+import PageHero from '@/components/PageHero';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDate, initials } from '@/lib/format';
@@ -27,6 +28,12 @@ export default function AdminClients() {
 
   return (
     <PageIn className="space-y-6">
+      <PageHero
+        icon={Users}
+        title="Supervision des clients"
+        subtitle="Vue d'ensemble des clients du système, statut et contrôle d'accès."
+        accent="from-violet-500 to-fuchsia-700"
+      />
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Rechercher un client…" className="input pl-9" />

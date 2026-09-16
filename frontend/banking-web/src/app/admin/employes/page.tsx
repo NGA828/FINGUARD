@@ -90,7 +90,12 @@ export default function AdminEmployees() {
                   {initials(emp.name)}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[13.5px] font-bold text-navy-900">{emp.name}</p>
+                  <p className="flex flex-wrap items-center gap-2 text-[13.5px] font-bold text-navy-900">
+                    {emp.name}
+                    <span className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ring-1 ring-inset ${emp.role === 'ADMIN' ? 'bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-600/20' : 'bg-sky-50 text-sky-700 ring-sky-600/20'}`}>
+                      {emp.role === 'ADMIN' ? 'Admin' : 'Employé'}
+                    </span>
+                  </p>
                   <p className="text-[11px] text-slate-400">{emp.email} · {emp.position} — {emp.department}</p>
                 </div>
                 <div className="text-right text-[11px] text-slate-400">
@@ -141,6 +146,12 @@ export default function AdminEmployees() {
             <Field label="Poste"><input className="input" value={form.position || ''} onChange={(e) => setForm({ ...form, position: e.target.value })} /></Field>
             <Field label="Département"><input className="input" value={form.department || ''} onChange={(e) => setForm({ ...form, department: e.target.value })} /></Field>
           </div>
+          <Field label="Rôle (permissions d'accès)" hint="ADMIN : configuration système, règles de fraude, audit. EMPLOYÉ : opérations et examen.">
+            <select className="input" value={form.role || 'EMPLOYEE'} onChange={(e) => setForm({ ...form, role: e.target.value })}>
+              <option value="EMPLOYEE">Employé de banque</option>
+              <option value="ADMIN">Administrateur</option>
+            </select>
+          </Field>
           <Button type="submit" loading={saving} className="w-full">Enregistrer</Button>
         </form>
       </Modal>

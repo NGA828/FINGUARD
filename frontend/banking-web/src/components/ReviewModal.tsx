@@ -106,6 +106,25 @@ export default function ReviewModal({ txId, open, onClose, onDone, allowReview =
             </div>
           )}
 
+          {detail.relatedTransactions?.length > 0 && (
+            <div>
+              <p className="mb-2 text-[11px] font-black uppercase tracking-wider text-slate-400">Activité antérieure connexe</p>
+              <div className="space-y-1.5">
+                {detail.relatedTransactions.map((r: any) => (
+                  <div key={r.id} className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2 text-xs">
+                    <span className="font-semibold text-slate-600">
+                      {TX_TYPE_LABELS[r.type]} · {formatDateTime(r.createdAt)}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className="font-black text-slate-700">{formatXAF(r.amount)}</span>
+                      <TxStatusBadge status={r.status} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {allowReview && reviewable && (
             <div className="space-y-3">
               <Field label="Note d'examen (optionnel)">

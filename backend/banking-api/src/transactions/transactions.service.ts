@@ -556,6 +556,18 @@ export class TransactionsService {
     const disputeList = disputes.all('transaction_id = ?', [txId], 'created_at DESC');
     const source = transaction.sourceAccountId ? this.accountWithOwner(transaction.sourceAccountId) : null;
     const target = transaction.targetAccountId ? this.accountWithOwner(transaction.targetAccountId) : null;
+
+    // Activité antérieure connexe du compte source (contexte d'examen).
+    let related: any[] = [];
+    if (transaction.sourceAccountId) {
+      related = query(
+        `SELECT * FROM transactions
+         WHERE source_account_id = ? AND id != ?
+         ORDER BY created_at DESC LIMIT 6`,
+        [transaction.sourceAccountId, txId],
+      ).map((t: any) => ({ ...t, amount: Number(t.amount) }));
+    }
+
     return {
       ...this.shapeTx(transaction as any),
       analysis,
@@ -563,6 +575,7 @@ export class TransactionsService {
       disputes: disputeList,
       sourceAccount: source,
       targetAccount: target,
+      relatedTransactions: related,
     };
   }
 
