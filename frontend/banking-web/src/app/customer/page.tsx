@@ -1,0 +1,365 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import {
+  ArrowDownLeft,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  ArrowUpRight,
+  Clock,
+  CreditCard,
+  Download,
+  Eye,
+  PieChart,
+  Plus,
+  Send,
+  ShieldAlert,
+  Wallet,
+} from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
+import { api, downloadFile } from '@/lib/api';
+import { useApi } from '@/lib/hooks';
+import { useAuth } from '@/lib/auth';
+import { formatDateTime, formatXAF } from '@/lib/format';
+import { TX_TYPE_LABELS } from '@/lib/labels';
+import { Button, Card, SkeletonRows, StatCard, TxStatusBadge } from '@/components/ui';
+import { PageIn, LiveDot } from '@/components/motion';
+import { useToast } from '@/components/toast';
+import NewTransactionModal from '@/components/NewTransactionModal';
+import TxRowIcon from '@/components/TxRowIcon';
+import { SpendingDonut } from '@/components/charts';
+
+export default function CustomerDashboard() {
+  const { user } = useAuth();
+  const { push } = useToast();
+  const { data, loading, reload } = useApi(() => api.get('/customer/dashboard'));
+  const [txOpen, setTxOpen] = useState(false);
+  const [quickType, setQuickType] = useState<string | undefined>(undefined);
+  const [tab, setTab] = useState('ALL');
+
+  const TABS = [
+    { id: 'ALL', label: 'Toutes' },
+    { id: 'DEPOSIT', label: 'Dépôts' },
+    { id: 'WITHDRAWAL', label: 'Retraits' },
+    { id: 'TRANSFER', label: 'Virements' },
+    { id: 'PAYMENT', label: 'Paiements' },
+  ];
+  const recentFiltered = (data?.recentTransactions || []).filter((t: any) => tab === 'ALL' || t.type === tab);
+
+  const pendingVerifications = (data?.recentTransactions || []).filter((t: any) => t.status === 'PENDING');
+
+  const confirm = async (tx: any, legitimate: boolean) => {
+    try {
+      const res = await api.post(`/customer/transactions/${tx.id}/confirm`, { legitimate });
+      if (legitimate) push('Transaction confirmée et traitée avec succès.', 'success');
+      else push('Transaction rejetée. Un litige a été créé pour investigation.', 'warning');
+      reload();
+    } catch (e: any) {
+      push(e.message, 'error');
+    }
+  };
+
+  return (
+    <PageIn className="space-y-6">
+      {/* Vérifications en attente */}
+      {pendingVerifications.map((tx: any) => (
+        <motion.div
+          key={tx.id}
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-5"
+        >
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100">
+              <ShieldAlert className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-black text-amber-800">
+                Un {TX_TYPE_LABELS[tx.type]?.toLowerCase()} de {formatXAF(tx.amount)} attend votre confirmation
+              </p>
+              <p className="mt-0.5 text-xs text-amber-700/80">
+                Détecté comme inhabituel par le moteur de fraude (réf. {tx.reference}). Avez-vous initié cette opération ?
+              </p>
+            </div>
+            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+              <Button variant="dark" className="w-full sm:w-auto" onClick={() => confirm(tx, true)}>
+                C’est moi, confirmer
+              </Button>
+              <Button variant="danger" className="w-full sm:w-auto" onClick={() => confirm(tx, false)}>
+                Je ne reconnais pas
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+
+      {/* Carte solde héro */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="relative overflow-hidden rounded-2xl bg-navy-950 p-7 text-white shadow-xl lg:col-span-2"
+        >
+          <div className="bg-grid-dark absolute inset-0" />
+          <div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-brand-500/25 blur-3xl" />
+          <div className="absolute -bottom-32 left-1/3 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
+          <div className="relative flex h-full flex-col justify-between gap-8 sm:flex-row sm:items-end">
+            <div>
+              <div className="flex items-center gap-2">
+                <LiveDot />
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Solde total disponible</p>
+              </div>
+              <p className="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-5xl">
+                {loading ? '…' : formatXAF(data?.balance ?? 0)}
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                {data?.accounts?.length || 0} compte(s) · {data?.pendingCount || 0} opération(s) en cours
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2.5">
+              <Button onClick={() => setTxOpen(true)}>
+                <Plus className="h-4 w-4" /> Nouvelle transaction
+              </Button>
+              <Link href="/customer/transactions">
+                <Button variant="glass">
+                  <Eye className="h-4 w-4" /> Voir les transactions
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Comptes */}
+        <Card className="p-5">
+          <p className="text-[13px] font-bold text-slate-500">Mes comptes</p>
+          <div className="mt-4 space-y-3">
+            {!data && loading ? (
+              <SkeletonRows n={2} />
+            ) : (
+              (data?.accounts || []).map((a: any, i: number) => (
+                <motion.div
+                  key={a.id}
+                  initial={{ opacity: 0, x: 16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15 + i * 0.1 }}
+                  className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50/60 p-3.5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-navy-900 text-white">
+                      <Wallet className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <p className="text-[13px] font-black text-navy-900">{a.accountNumber}</p>
+                      <p className="text-[11px] font-semibold text-slate-400">
+                        {a.status === 'ACTIVE' ? 'Actif' : a.status === 'FROZEN' ? 'Gelé' : 'Fermé'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-black text-navy-900">{formatXAF(a.balance)}</p>
+                    <button
+                      title="Télécharger le relevé (CSV)"
+                      onClick={() =>
+                        downloadFile(`/customer/accounts/${a.id}/statement`, `releve-${a.accountNumber}.csv`)
+                          .then(() => push(`Relevé du compte ${a.accountNumber} téléchargé.`, 'success'))
+                          .catch((e) => push(e.message, 'error'))
+                      }
+                      className="rounded-lg p-1.5 text-slate-400 transition hover:bg-brand-50 hover:text-brand-600"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Actions rapides */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-5">
+        {[
+          { t: 'DEPOSIT', label: 'Dépôt', icon: ArrowDownToLine, cls: 'from-emerald-500 to-emerald-700' },
+          { t: 'WITHDRAWAL', label: 'Retrait', icon: ArrowUpFromLine, cls: 'from-rose-500 to-rose-700' },
+          { t: 'TRANSFER', label: 'Virement', icon: Send, cls: 'from-sky-500 to-sky-700' },
+          { t: 'PAYMENT', label: 'Paiement', icon: CreditCard, cls: 'from-violet-500 to-violet-700' },
+        ].map((a, i) => (
+          <motion.button
+            key={a.t}
+            whileHover={{ y: -4, scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 + i * 0.06 }}
+            onClick={() => {
+              setQuickType(a.t);
+              setTxOpen(true);
+            }}
+            className="card card-hover group flex items-center gap-3 p-4 text-left"
+          >
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${a.cls} text-white shadow-md transition group-hover:scale-110`}>
+              <a.icon className="h-4.5 w-4.5 h-5 w-5" />
+            </span>
+            <span className="text-[13.5px] font-black text-navy-900">{a.label}</span>
+          </motion.button>
+        ))}
+        <motion.button
+          whileHover={{ y: -4, scale: 1.02 }}
+          whileTap={{ scale: 0.96 }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.34 }}
+          onClick={() => {
+            setQuickType(undefined);
+            setTxOpen(true);
+          }}
+          className="card card-hover col-span-2 flex items-center justify-center gap-2 p-4 text-[13.5px] font-black text-brand-700 sm:col-span-4 lg:col-span-1"
+        >
+          <Plus className="h-4 w-4" /> Autre…
+        </motion.button>
+      </div>
+
+      {/* Statistiques */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={<ArrowDownToLine className="h-5 w-5" />} label="Dépôts (30 j)" value={data?.monthlyTotals?.deposits ?? 0} format={(n) => formatXAF(n)} delay={0.05} />
+        <StatCard icon={<ArrowUpFromLine className="h-5 w-5" />} label="Retraits (30 j)" value={data?.monthlyTotals?.withdrawals ?? 0} format={(n) => formatXAF(n)} accent="text-rose-600 bg-rose-50" delay={0.1} />
+        <StatCard icon={<Send className="h-5 w-5" />} label="Virements (30 j)" value={data?.monthlyTotals?.transfers ?? 0} format={(n) => formatXAF(n)} accent="text-sky-600 bg-sky-50" delay={0.15} />
+        <StatCard icon={<Clock className="h-5 w-5" />} label="Opérations en cours" value={data?.pendingCount ?? 0} accent="text-amber-600 bg-amber-50" delay={0.2} />
+      </div>
+
+      {/* Transactions récentes + alertes */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 pt-5">
+            <p className="text-sm font-black text-navy-900">Transactions récentes</p>
+            <div className="flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">
+              {TABS.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTab(t.id)}
+                  className={`relative rounded-lg px-3 py-1.5 text-[11px] font-bold transition ${tab === t.id ? 'text-white' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  {tab === t.id && (
+                    <motion.span layoutId="tx-tab" className="absolute inset-0 rounded-lg bg-navy-900" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />
+                  )}
+                  <span className="relative">{t.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="p-3">
+            {loading && !data ? (
+              <SkeletonRows n={5} />
+            ) : recentFiltered.length === 0 ? (
+              <p className="py-10 text-center text-sm text-slate-400">Aucune transaction dans cette catégorie.</p>
+            ) : (
+              recentFiltered.map((t: any, i: number) => (
+                <motion.div
+                  key={t.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 * i }}
+                  className="flex items-center gap-4 rounded-xl px-3 py-3 transition hover:bg-slate-50"
+                >
+                  <TxRowIcon type={t.type} direction={t.sourceAccountId ? 'out' : 'in'} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[13.5px] font-bold text-navy-900">
+                      {TX_TYPE_LABELS[t.type]}
+                      {t.beneficiaryName ? ` · ${t.beneficiaryName}` : ''}
+                    </p>
+                    <p className="text-[11px] text-slate-400">
+                      {formatDateTime(t.createdAt)} · {t.reference}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className={`text-[13.5px] font-black ${t.sourceAccountId ? 'text-slate-700' : 'text-emerald-600'}`}>
+                      {t.sourceAccountId ? '−' : '+'}
+                      {formatXAF(t.amount)}
+                    </p>
+                    <TxStatusBadge status={t.status} />
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+        </Card>
+
+        <div className="space-y-6">
+          {/* Répartition des dépenses (30 jours) */}
+          <Card className="p-5">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-black text-navy-900">Mes dépenses (30 j)</p>
+              <span className="flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-brand-700">
+                <PieChart className="h-3 w-3" /> Répartition
+              </span>
+            </div>
+            {(() => {
+              const spending = (data?.spending || [])
+                .map((s: any) => ({ key: s.type, name: TX_TYPE_LABELS[s.type] || s.type, value: s.total }))
+                .filter((s: any) => s.value > 0);
+              if (!spending.length)
+                return <p className="py-10 text-center text-xs text-slate-400">Aucune dépense sortante sur les 30 derniers jours.</p>;
+              const total = spending.reduce((s: number, x: any) => s + x.value, 0);
+              return (
+                <>
+                  <SpendingDonut data={spending} />
+                  <div className="space-y-2">
+                    {spending.map((s: any) => (
+                      <div key={s.key} className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-2 font-semibold text-slate-600">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{
+                              backgroundColor:
+                                s.key === 'WITHDRAWAL' ? '#f43f5e' : s.key === 'TRANSFER' ? '#0ea5e9' : s.key === 'PAYMENT' ? '#8b5cf6' : '#10b981',
+                            }}
+                          />
+                          {s.name}
+                        </span>
+                        <span className="font-black text-navy-900">
+                          {formatXAF(s.value)} <span className="font-semibold text-slate-400">({Math.round((s.value / total) * 100)}%)</span>
+                        </span>
+                      </div>
+                    ))}
+                    <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-xs">
+                      <span className="font-bold text-slate-500">Total dépensé</span>
+                      <span className="font-black text-navy-900">{formatXAF(total)}</span>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </Card>
+
+          {/* Alertes de sécurité */}
+          <Card className="p-5">
+          <p className="text-sm font-black text-navy-900">Alertes de sécurité</p>
+          <div className="mt-4 space-y-3">
+            {(!data?.securityAlerts || data.securityAlerts.length === 0) && (
+              <p className="rounded-xl bg-emerald-50 p-3 text-xs font-semibold text-emerald-700">
+                Aucune alerte récente. Votre compte est protégé. 🛡️
+              </p>
+            )}
+            {(data?.securityAlerts || []).map((n: any, i: number) => (
+              <motion.div
+                key={n.id}
+                initial={{ opacity: 0, x: 12 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.1 * i }}
+                className="rounded-xl border border-rose-100 bg-rose-50/50 p-3"
+              >
+                <p className="text-xs font-black text-rose-700">{n.title}</p>
+                <p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-slate-500">{n.message}</p>
+                <p className="mt-1 text-[10px] text-slate-400">{formatDateTime(n.createdAt)}</p>
+              </motion.div>
+            ))}
+          </div>
+          </Card>
+        </div>
+      </div>
+
+      <NewTransactionModal open={txOpen} onClose={() => setTxOpen(false)} onDone={() => reload(true)} initialType={quickType} />
+    </PageIn>
+  );
+}

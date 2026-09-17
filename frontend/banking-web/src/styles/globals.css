@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #10b282;
+  --navy: #060d1d;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+body {
+  @apply antialiased text-slate-800 bg-slate-100;
+  font-family:
+    'Inter',
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
+}
+
+/* ------------------------------------------------------------------ */
+/* Utilitaires visuels FinGuard                                        */
+/* ------------------------------------------------------------------ */
+
+.text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-emerald-300 to-cyan-300;
+}
+
+.text-gradient-dark {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-cyan-600;
+}
+
+.bg-grid-dark {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+.glass {
+  @apply bg-white/5 border border-white/10 backdrop-blur-xl;
+}
+
+.glass-light {
+  @apply bg-white/70 border border-white/60 backdrop-blur-xl;
+}
+
+.card {
+  @apply bg-white rounded-2xl border border-slate-200/80 shadow-card;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-brand-200;
+}
+
+.skeleton {
+  @apply rounded-lg bg-slate-200/80 animate-shimmer;
+  background-image: linear-gradient(
+    90deg,
+    rgba(226, 232, 240, 0) 0,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(226, 232, 240, 0) 100%
+  );
+  background-size: 600px 100%;
+  background-repeat: no-repeat;
+}
+
+/* Scrollbar discrète */
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+*::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+.dark-scroll::-webkit-scrollbar-thumb {
+  @apply bg-navy-700;
+}
+
+/* Champ de formulaire */
+.input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-800
+    placeholder-slate-400 outline-none transition-all duration-200
+    focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15;
+}
+
+.input-dark {
+  @apply w-full rounded-xl border border-white/15 bg-white/5 px-3.5 py-2.5 text-sm text-white
+    placeholder-slate-400 outline-none transition-all duration-200
+    focus:border-brand-400 focus:ring-4 focus:ring-brand-400/20;
+}
+
+.label {
+  @apply mb-1.5 block text-[13px] font-semibold text-slate-600;
+}
+
+/* Tableaux */
+.table-head {
+  @apply text-left text-[11px] font-bold uppercase tracking-wider text-slate-400;
+}
