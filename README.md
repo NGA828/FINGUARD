@@ -72,6 +72,7 @@ FINGUARD/
 │       ├── accounts/  customers/  employees/
 │       ├── transactions/         # Workflow + service bancaire externe simulé
 │       ├── fraud/                # Moteur de détection de fraude
+│       ├── assistant/            # Chatbot IA (NLU intégré + adaptateur LLM)
 │       ├── alerts/  disputes/  notifications/  audit/  reports/
 │       ├── common/               # Gardes RBAC, constantes, filtres
 │       └── database/             # Connexion SQLite + repositories + DDL
@@ -180,6 +181,39 @@ compteurs, transitions de pages, modales spring, toasts) et images générées s
 ### 📈 Graphique de dépenses (client)
 - Le tableau de bord client affiche la **répartition des dépenses sortantes (30 jours)**
   par type d'opération (donut Recharts + légende avec pourcentages).
+
+### 🤖 Assistant IA (client) — conversationnel + vocal
+Un **chatbot** dédié (`/customer/assistant`) permet au client de dialoguer avec la banque :
+
+| Fonction | Exemple de question |
+|---|---|
+| Solde en temps réel | « Quel est mon solde ? » |
+| Dernières transactions (avec cartes riches) | « Mes dernières transactions » |
+| Statut d'une transaction par référence | « Quel est le statut de TX-2026-274720 ? » |
+| **Niveau de risque + explication** du moteur de fraude | « Pourquoi ma transaction est bloquée ? » |
+| Opérations en attente / à confirmer | « Y a-t-il des opérations en attente ? » |
+| Litiges | « Je ne reconnais pas cette transaction » |
+| FAQ : frais, limites/plafonds, détection de fraude, sécurité, contact | « Comment fonctionne la détection de fraude ? » |
+
+**Architecture**
+- **Moteur NLU intégré** (`backend/banking-api/src/assistant/nlu.ts`) : détection
+  d'intention par mots-clés pondérés (FR + EN), extraction de référence `TX-…` et de type
+  d'opération. Fonctionne **100 % hors-ligne**, sans clé API.
+- **LLM-ready** (`llm.service.ts`) : pour brancher un vrai modèle (OpenAI ou tout
+  endpoint compatible), ajouter dans `backend/banking-api/.env` :
+  ```env
+  LLM_PROVIDER=openai
+  LLM_API_KEY=sk-...
+  LLM_MODEL=gpt-4o-mini            # optionnel
+  LLM_BASE_URL=https://api.openai.com/v1   # optionnel (OpenRouter, Mistral, Ollama…)
+  ```
+  Le LLM reçoit le contexte live du client (soldes, dernières transactions, limites) et
+  prend le relais sur les questions ouvertes ; en cas d'échec, repli automatique sur le
+  moteur intégré.
+- **Voix** : notes vocales entrantes (reconnaissance vocale du navigateur) et réponses
+  lues à voix haute (synthèse vocale) — aucune API externe requise.
+- **RBAC** : les routes `GET /api/customer/assistant/welcome` et
+  `POST /api/customer/assistant/chat` sont réservées au rôle `CLIENT`.
 
 ### 📚 Documentation Swagger
 - Disponible sur `http://localhost:4000/api/docs` (JSON : `/api/docs-json`).

@@ -23,10 +23,13 @@ import { ReportsService } from './reports/reports.service';
 import { AdministrationService } from './administration/administration.service';
 import { BeneficiariesService } from './beneficiaries/beneficiaries.service';
 import { AuditService } from './audit/audit.service';
+import { AssistantController } from './assistant/assistant.controller';
+import { AssistantService } from './assistant/assistant.service';
+import { LlmService } from './assistant/llm.service';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, AuditModule],
-  controllers: [NotificationsController, CustomerController, EmployeeController, AdminController],
+  controllers: [NotificationsController, CustomerController, EmployeeController, AdminController, AssistantController],
   providers: [
     ...GlobalProviders,
     AuditService,
@@ -42,6 +45,8 @@ import { AuditService } from './audit/audit.service';
     ReportsService,
     AdministrationService,
     BeneficiariesService,
+    AssistantService,
+    LlmService,
   ],
 })
 export class AppModule {}
