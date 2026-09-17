@@ -88,7 +88,8 @@ FINGUARD/
 ## 3. Démarrage
 
 📘 **Guide complet (installation pas à pas + utilisation des trois espaces) :**
-[`docs/GUIDE_UTILISATEUR.md`](docs/GUIDE_UTILISATEUR.md).
+[`docs/GUIDE_UTILISATEUR.pdf`](docs/GUIDE_UTILISATEUR.pdf) — version PDF,
+ou [`docs/GUIDE_UTILISATEUR.md`](docs/GUIDE_UTILISATEUR.md) pour la source Markdown.
 
 ```bash
 # Backend
@@ -201,6 +202,7 @@ compteurs, transitions de pages, modales spring, toasts) et images générées s
 - **Exécution CLI** : `cd postman && npm install && npm test` (rapport HTML dans
   `postman/reports/`). La collection se prépare seule (limites + solde) pour être
   rejouable depuis un seed vierge.
-- **Captures d'écran des tests** : `docs/tests-postman/` — synthèse
-  (`00-synthese.png`), détail par dossier (`01` → `05`) et exécution complète
-  (`06`, `07`), générés depuis une vraie exécution Newman (54/54 · 111/111 · 0 échec).
+- **Captures d'écran des tests** : `docs/tests-postman/` — vues façon application
+  Postman (`postman-ui-01` → `postman-ui-09`, corps de réponses réels + Collection
+  Runner 54/54 · 111/111 · 0 échec) et cartes de synthèse Newman
+  (`00-synthese.png`, détail par dossier `01` → `05`, exécution complète `06`, `07`).

@@ -29,8 +29,29 @@ npm test          # cli + rapport HTML dans reports/FinGuard-API-report.html
 
 ## Captures d'écran des exécutions
 
-Les captures PNG (fenêtres « terminal » stylisées + carte de synthèse) sont générées à
-partir d'une vraie exécution Newman sur un seed réinitialisé, dans
+### Vues façon application Postman (recommandées)
+
+Les captures `postman-ui-*.png` de `docs/tests-postman/` reproduisent l'interface de
+l'application Postman (sidebar de collection, barre d'URL + bouton **Send**, onglets de
+réponse avec pastille de statut et corps JSON/CSV, vue **Runner**). Les corps affichés
+sont les **vraies réponses** renvoyées par l'API FinGuard lors de l'exécution :
+
+| Capture | Scénario | Statut |
+|---|---|---|
+| `postman-ui-01-login-client.png` | Connexion CLIENT (`/api/auth/login`) | `201 Created` + JWT |
+| `postman-ui-02-login-refuse.png` | Mot de passe invalide | `401 Unauthorized` |
+| `postman-ui-03-virement-revue.png` | Virement 2 500 000 FCFA → revue de fraude | `201 Created`, `UNDER_REVIEW` |
+| `postman-ui-04-releve-csv.png` | Relevé de compte (export CSV) | `200 OK` |
+| `postman-ui-05-beneficiaire-doublon.png` | Bénéficiaire en double | `409 Conflict` |
+| `postman-ui-06-simulateur-fraude.png` | Simulateur de fraude (employé) | `201 Created` |
+| `postman-ui-07-export-admin.png` | Export CSV des transactions (admin) | `200 OK` |
+| `postman-ui-08-rbac-403.png` | CLIENT sur route `/employee/*` | `403 Forbidden` |
+| `postman-ui-09-runner-resultats.png` | Collection Runner — 54/54 requêtes, 111/111 assertions, 0 échec | ✅ |
+
+### Cartes de synthèse (exécution Newman)
+
+Les captures `00-…` → `07-…` (fenêtres « terminal » stylisées + carte de synthèse) sont
+générées à partir d'une vraie exécution Newman sur un seed réinitialisé, dans
 `docs/tests-postman/` :
 
 - `00-synthese.png` — carte de résultats (54/54 requêtes, 111/111 assertions, 0 échec) ;
