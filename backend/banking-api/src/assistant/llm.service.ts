@@ -7,12 +7,18 @@ import { Injectable } from '@nestjs/common';
  * NLU intégré (nlu.ts), 100 % hors-ligne. Pour activer un vrai modèle de
  * langage, définir dans `.env` :
  *
- *   LLM_PROVIDER=openai                 # active l'adaptateur
- *   LLM_API_KEY=sk-...                  # clé API
- *   LLM_MODEL=gpt-4o-mini               # (optionnel)
- *   LLM_BASE_URL=https://api.openai.com/v1   # (optionnel, compatible
- *                                       #  avec tout endpoint OpenAI-like :
- *                                       #  OpenRouter, Mistral, Ollama…)
+ *   Option 1 — Gemini (gratuit, recommandé) :
+ *     LLM_PROVIDER=gemini
+ *     LLM_API_KEY=AIza...                          # clé Google AI Studio
+ *     LLM_MODEL=gemini-2.5-flash                   # (optionnel)
+ *     # LLM_BASE_URL auto : https://generativelanguage.googleapis.com/v1beta/openai
+ *
+ *   Option 2 — OpenAI ou tout endpoint compatible :
+ *     LLM_PROVIDER=openai
+ *     LLM_API_KEY=sk-...
+ *     LLM_MODEL=gpt-4o-mini                        # (optionnel)
+ *     LLM_BASE_URL=https://api.openai.com/v1       # (optionnel : OpenRouter,
+ *                                                  #  Mistral, Ollama…)
  *
  * En cas d'échec réseau/modèle, le service retombe silencieusement sur
  * le moteur intégré : la conversation ne casse jamais.
@@ -23,16 +29,34 @@ export interface LlmTurn {
   content: string;
 }
 
+const PROVIDERS: Record<string, { baseUrl: string; defaultModel: string }> = {
+  gemini: {
+    // Endpoint officiel de compatibilité OpenAI de Google (free tier AI Studio).
+    baseUrl: 'https://generativelanguage.googleapis.com/v1beta/openai',
+    defaultModel: 'gemini-2.5-flash',
+  },
+  openai: {
+    baseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-4o-mini',
+  },
+};
+
 @Injectable()
 export class LlmService {
   private histories = new Map<string, LlmTurn[]>();
 
+  private get providerCfg() {
+    const name = (process.env.LLM_PROVIDER || '').toLowerCase();
+    return PROVIDERS[name] || null;
+  }
+
   get available(): boolean {
-    return process.env.LLM_PROVIDER === 'openai' && !!process.env.LLM_API_KEY;
+    return !!this.providerCfg && !!process.env.LLM_API_KEY;
   }
 
   get provider(): string {
-    return this.available ? `llm:${process.env.LLM_MODEL || 'gpt-4o-mini'}` : 'builtin-nlu';
+    if (!this.available || !this.providerCfg) return 'builtin-nlu';
+    return `llm:${process.env.LLM_MODEL || this.providerCfg.defaultModel}`;
   }
 
   /** Construit le prompt système avec le contexte bancaire live du client. */
@@ -54,22 +78,31 @@ export class LlmService {
    * erreur — l'appelant bascule alors sur le moteur intégré.
    */
   async ask(userId: string, userName: string, message: string, context: string): Promise<string | null> {
-    if (!this.available) return null;
+    const cfg = this.providerCfg;
+    if (!cfg || !process.env.LLM_API_KEY) return null;
     try {
       const history = this.histories.get(userId) || [];
-      const body = {
-        model: process.env.LLM_MODEL || 'gpt-4o-mini',
+      const model = process.env.LLM_MODEL || cfg.defaultModel;
+      const baseUrl = (process.env.LLM_BASE_URL || cfg.baseUrl).replace(/\/+$/, '');
+      const body: any = {
+        model,
         temperature: 0.4,
-        max_tokens: 400,
         messages: [
           { role: 'system', content: this.systemPrompt(userName, context) },
           ...history.slice(-6),
           { role: 'user', content: message },
         ],
       };
+      // Gemini préfère max_output_tokens via `max_completion_tokens` sur la
+      // couche de compatibilité OpenAI ; OpenAI accepte max_tokens.
+      if ((process.env.LLM_PROVIDER || '').toLowerCase() === 'gemini') {
+        body.max_completion_tokens = 400;
+      } else {
+        body.max_tokens = 400;
+      }
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 10000);
-      const res = await fetch(`${process.env.LLM_BASE_URL || 'https://api.openai.com/v1'}/chat/completions`, {
+      const timer = setTimeout(() => controller.abort(), 15000);
+      const res = await fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

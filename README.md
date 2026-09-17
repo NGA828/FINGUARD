@@ -199,17 +199,20 @@ Un **chatbot** dédié (`/customer/assistant`) permet au client de dialoguer ave
 - **Moteur NLU intégré** (`backend/banking-api/src/assistant/nlu.ts`) : détection
   d'intention par mots-clés pondérés (FR + EN), extraction de référence `TX-…` et de type
   d'opération. Fonctionne **100 % hors-ligne**, sans clé API.
-- **LLM-ready** (`llm.service.ts`) : pour brancher un vrai modèle (OpenAI ou tout
-  endpoint compatible), ajouter dans `backend/banking-api/.env` :
+- **LLM-ready** (`llm.service.ts`) : pour brancher un vrai modèle, ajouter dans
+  `backend/banking-api/.env` (voir `.env.example`) :
+
+  **Option recommandée — Google Gemini (gratuit)** : clé gratuite sur
+  [Google AI Studio](https://aistudio.google.com/apikey), puis :
   ```env
-  LLM_PROVIDER=openai
-  LLM_API_KEY=sk-...
-  LLM_MODEL=gpt-4o-mini            # optionnel
-  LLM_BASE_URL=https://api.openai.com/v1   # optionnel (OpenRouter, Mistral, Ollama…)
+  LLM_PROVIDER=gemini
+  LLM_API_KEY=AIza...
+  # LLM_MODEL=gemini-2.5-flash (défaut) — endpoint de compatibilité OpenAI auto
   ```
-  Le LLM reçoit le contexte live du client (soldes, dernières transactions, limites) et
-  prend le relais sur les questions ouvertes ; en cas d'échec, repli automatique sur le
-  moteur intégré.
+  Tout endpoint OpenAI-like fonctionne aussi (`LLM_PROVIDER=openai` +
+  `LLM_BASE_URL` pour OpenRouter, Mistral, Ollama…). Le LLM reçoit le contexte
+  live du client (soldes, dernières transactions, limites) et prend le relais sur
+  les questions ouvertes ; en cas d'échec, repli automatique sur le moteur intégré.
 - **Voix** : notes vocales entrantes (reconnaissance vocale du navigateur) et réponses
   lues à voix haute (synthèse vocale) — aucune API externe requise.
 - **RBAC** : les routes `GET /api/customer/assistant/welcome` et
