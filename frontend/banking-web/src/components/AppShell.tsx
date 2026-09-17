@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   BarChart3,
   Bell,
+  Bot,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -39,6 +40,7 @@ export interface NavItem {
 
 export const CUSTOMER_NAV: NavItem[] = [
   { href: '/customer', label: 'Tableau de bord', icon: LayoutDashboard, end: true },
+  { href: '/customer/assistant', label: 'Assistant IA', icon: Bot },
   { href: '/customer/transactions', label: 'Transactions', icon: ArrowLeftRight },
   { href: '/customer/beneficiaries', label: 'Bénéficiaires', icon: HeartHandshake },
   { href: '/customer/disputes', label: 'Litiges', icon: Scale },
