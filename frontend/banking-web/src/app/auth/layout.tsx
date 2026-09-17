@@ -17,19 +17,17 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Shield className="h-5 w-5 text-white" />
             </div>
           </div>
-          <span className="text-lg font-extrabold tracking-tight text-navy-900">
-            Fin<span className="text-brand-600">Guard</span>
-          </span>
+          <span className="text-lg font-extrabold tracking-tight text-navy-900">Shield</span>
         </Link>
         <div className="flex flex-1 items-center justify-center py-10">{children}</div>
         <p className="text-center text-xs text-slate-400">
-          © 2026 FinGuard — transactions sécurisées, fraude détectée.
+          © 2026 Shield — transactions sécurisées, fraude détectée.
         </p>
       </div>
 
       {/* Panneau visuel */}
       <div className="relative hidden overflow-hidden lg:block">
-        <Image src="/images/auth-side.jpg" alt="Sécurité bancaire FinGuard" fill className="object-cover" />
+        <Image src="/images/auth-side.jpg" alt="Sécurité bancaire Shield" fill className="object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-navy-950/90 via-navy-950/30 to-navy-950/20" />
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -44,7 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           <p className="mt-3 text-2xl font-black leading-snug text-white">
             « Chaque transaction est analysée avant d’exister. C’est ça, la banque intelligente. »
           </p>
-          <p className="mt-3 text-sm text-slate-300">Moteur de fraude FinGuard · analyse en moins de 50 ms</p>
+          <p className="mt-3 text-sm text-slate-300">Moteur de fraude Shield · analyse en moins de 50 ms</p>
         </motion.div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-/** Client API FinGuard : toutes les requêtes passent par le proxy /api. */
+/** Client API Shield : toutes les requêtes passent par le proxy /api. */
 
 export class ApiError extends Error {
   status: number;

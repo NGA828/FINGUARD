@@ -1,4 +1,4 @@
-/** Initialise (ou réinitialise avec --reset) la base de données FinGuard. */
+/** Initialise (ou réinitialise avec --reset) la base de données Shield. */
 import { getConnection, resetDatabase } from '../src/database/connection';
 
 if (process.argv.includes('--reset')) {

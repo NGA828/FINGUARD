@@ -106,11 +106,11 @@ export default function LandingPage() {
               <div className="relative">
                 <div className="absolute inset-0 rounded-xl bg-brand-500/50 blur-lg" />
                 <div className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-emerald-700">
-                  <Shield className="h-4.5 w-4.5 h-5 w-5 text-white" />
+                  <Shield className="h-5 w-5 text-white" />
                 </div>
               </div>
-              <span className="text-lg font-extrabold tracking-tight">
-                Fin<span className="text-brand-400">Guard</span>
+              <span className="text-lg font-extrabold tracking-tight text-white">
+                Shield
               </span>
             </Link>
             <div className="hidden items-center gap-7 text-[13.5px] font-semibold text-slate-300 md:flex">
@@ -198,7 +198,7 @@ export default function LandingPage() {
 
             <Reveal delay={0.2}>
               <p className="mt-6 max-w-lg text-[15.5px] leading-relaxed text-slate-400">
-                FinGuard analyse chaque transaction — montant, fréquence, historique, heure — et attribue un
+                Shield analyse chaque transaction — montant, fréquence, historique, heure — et attribue un
                 niveau de risque avant tout traitement. Les opérations sûres passent instantanément, les
                 opérations suspectes sont vérifiées ou mises en attente.
               </p>
@@ -258,7 +258,7 @@ export default function LandingPage() {
               >
                 <Image
                   src="/images/hero-fintech.jpg"
-                  alt="Bouclier de protection bancaire FinGuard"
+                  alt="Bouclier de protection bancaire Shield"
                   width={1280}
                   height={720}
                   className="h-full w-full object-cover"
@@ -301,7 +301,7 @@ export default function LandingPage() {
               >
                 <div className="flex items-center gap-3">
                   <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/20">
-                    <ShieldCheck className="h-4.5 w-4.5 h-5 w-5 text-emerald-400" />
+                    <ShieldCheck className="h-5 w-5 text-emerald-400" />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-white">Transaction autorisée</p>
@@ -320,7 +320,7 @@ export default function LandingPage() {
       <section id="fonctionnement" className="relative py-24">
         <div className="mx-auto max-w-7xl px-6">
           <Reveal>
-            <p className="text-center text-xs font-black uppercase tracking-[0.2em] text-brand-400">Le flux FinGuard</p>
+            <p className="text-center text-xs font-black uppercase tracking-[0.2em] text-brand-400">Le flux Shield</p>
             <h2 className="mt-3 text-center text-3xl font-black tracking-tight md:text-4xl">
               De l’initiation à la décision, <span className="text-gradient">en quelques millisecondes</span>
             </h2>
@@ -537,7 +537,7 @@ export default function LandingPage() {
                     app.finguard.cm/customer
                   </div>
                 </div>
-                <Image src="/images/app-preview.jpg" alt="Aperçu du tableau de bord FinGuard" width={1280} height={720} className="w-full" />
+                <Image src="/images/app-preview.jpg" alt="Aperçu du tableau de bord Shield" width={1280} height={720} className="w-full" />
               </div>
             </div>
           </Reveal>
@@ -580,12 +580,10 @@ export default function LandingPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-brand-500 to-emerald-700">
               <Shield className="h-4 w-4 text-white" />
             </div>
-            <span className="font-extrabold">
-              Fin<span className="text-brand-400">Guard</span>
-            </span>
+            <span className="font-extrabold text-white">Shield</span>
           </div>
           <p className="text-xs text-slate-500">
-            © 2026 FinGuard — Système intelligent de gestion des transactions bancaires et de détection de fraude.
+            © 2026 Shield — Système intelligent de gestion des transactions bancaires et de détection de fraude.
           </p>
           <div className="flex gap-6 text-xs font-semibold text-slate-400">
             <a href="#fonctionnement" className="transition hover:text-white">Fonctionnement</a>

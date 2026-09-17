@@ -27,7 +27,7 @@ export interface FraudResult {
 }
 
 /**
- * Moteur intelligent de détection de fraude de FinGuard.
+ * Moteur intelligent de détection de fraude de Shield.
  *
  * Approche hybride (conforme au cahier des charges §26) :
  *  - règles backend configurables par l'administrateur (table fraud_rules) ;

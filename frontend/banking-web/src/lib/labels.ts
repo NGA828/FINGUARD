@@ -1,4 +1,4 @@
-/** Libellés français + couleurs par statut (design system FinGuard). */
+/** Libellés français + couleurs par statut (design system Shield). */
 
 export const TX_TYPE_LABELS: Record<string, string> = {
   DEPOSIT: 'Dépôt',

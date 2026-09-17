@@ -1,4 +1,4 @@
-# 📘 FinGuard — Guide d'installation & d'utilisation
+# 📘 Shield — Guide d'installation & d'utilisation
 
 **Système Intelligent de Gestion des Transactions Bancaires et de Détection de Fraude**
 
@@ -66,7 +66,7 @@ npm run db:setup     # crée le schéma + insère les données de démonstration
 npm run start        # démarre l'API
 ```
 
-L'API démarre sur **http://localhost:4000/api** (message `🛡️ FinGuard API démarrée`).
+L'API démarre sur **http://localhost:4000/api** (message `🛡️ Shield API démarrée`).
 
 - **Documentation Swagger interactive** : http://localhost:4000/api/docs
 - **OpenAPI (JSON)** : http://localhost:4000/api/docs-json
@@ -102,7 +102,7 @@ port 4000 : aucun réglage CORS ou d'adresse à faire.
 
 ### 2.4 Vérification rapide
 
-1. Ouvrez http://localhost:3000 → la page d'accueil FinGuard s'affiche.
+1. Ouvrez http://localhost:3000 → la page d'accueil Shield s'affiche.
 2. Cliquez sur **« Accéder à mon espace »** (ou allez sur `/auth/login`).
 3. Connectez-vous avec `admin@finguard.com` / `Admin123!` → le tableau de bord
    administrateur apparaît. ✔️ L'installation fonctionne.

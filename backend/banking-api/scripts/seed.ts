@@ -1,5 +1,5 @@
 /**
- * Seed FinGuard — données de démonstration réalistes :
+ * Seed Shield — données de démonstration réalistes :
  * administrateur, employés, clients, comptes, historique de transactions,
  * cas de fraude (scénario du cahier des charges §29), litiges,
  * notifications, journaux d'audit, configuration et règles de fraude.

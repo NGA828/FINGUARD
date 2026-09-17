@@ -132,9 +132,7 @@ export default function AppShell({ children, title }: { children: React.ReactNod
           </div>
         </div>
         <div>
-          <p className="text-lg font-extrabold tracking-tight">
-            Fin<span className="text-brand-400">Guard</span>
-          </p>
+          <p className="text-lg font-extrabold tracking-tight text-white">Shield</p>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
             {roleLabel(user?.role || '')}
           </p>

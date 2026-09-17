@@ -148,7 +148,7 @@ export class CustomersService {
     this.notify.notify(
       user.id,
       'SYSTEM',
-      'Bienvenue chez FinGuard',
+      'Bienvenue chez Shield',
       `Votre compte bancaire ${account.accountNumber} a été ouvert avec succès.`,
     );
     this.audit.record({

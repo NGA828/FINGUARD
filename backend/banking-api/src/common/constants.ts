@@ -1,4 +1,4 @@
-/** Constantes métier FinGuard. */
+/** Constantes métier Shield. */
 
 export const ROLES = ['CLIENT', 'EMPLOYEE', 'ADMIN'] as const;
 export const ACCOUNT_STATUSES = ['ACTIVE', 'FROZEN', 'CLOSED'] as const;

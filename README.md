@@ -1,8 +1,8 @@
-# 🛡️ FinGuard
+# 🛡️ Shield
 
 **Système Intelligent de Gestion des Transactions Bancaires et de Détection de Fraude**
 
-FinGuard est une application web bancaire complète : les clients effectuent des opérations
+Shield est une application web bancaire complète : les clients effectuent des opérations
 (dépôts, retraits, virements, paiements), un **moteur intelligent de détection de fraude**
 analyse chaque transaction et attribue un niveau de risque **avant** tout traitement,
 les employés examinent les cas suspects et résolvent les litiges, et les administrateurs

@@ -46,7 +46,7 @@ export default function LoginPage() {
       className="w-full max-w-md"
     >
       <h1 className="text-3xl font-black tracking-tight text-navy-900">Bon retour parmi nous</h1>
-      <p className="mt-2 text-sm text-slate-500">Connectez-vous à votre espace sécurisé FinGuard.</p>
+      <p className="mt-2 text-sm text-slate-500">Connectez-vous à votre espace sécurisé Shield.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-5">
         <Field label="Adresse e-mail">

@@ -121,7 +121,7 @@ export default function BeneficiariesPage() {
                 <div className="flex items-center justify-between border-t border-slate-100 pt-3">
                   <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400">
                     <Landmark className="h-3.5 w-3.5" />
-                    {b.bankLabel || 'FinGuard Bank'}
+                    {b.bankLabel || 'Shield Bank'}
                   </span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
                     Ajouté le {formatDateTime(b.createdAt)}
@@ -145,7 +145,7 @@ export default function BeneficiariesPage() {
               className="input"
             />
           </Field>
-          <Field label="Numéro de compte (format FG-XXXXXXXX)" hint="Le compte doit exister chez FinGuard pour recevoir un virement.">
+          <Field label="Numéro de compte (format FG-XXXXXXXX)" hint="Le compte doit exister chez Shield pour recevoir un virement.">
             <input
               required
               value={form.accountNumber}
@@ -158,7 +158,7 @@ export default function BeneficiariesPage() {
             <input
               value={form.bankLabel}
               onChange={(e) => setForm({ ...form, bankLabel: e.target.value })}
-              placeholder="FinGuard Bank"
+              placeholder="Shield Bank"
               className="input"
             />
           </Field>

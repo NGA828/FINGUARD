@@ -1,5 +1,5 @@
 /**
- * Connexion SQLite (node:sqlite) — adaptateur d'exécution de FinGuard.
+ * Connexion SQLite (node:sqlite) — adaptateur d'exécution de Shield.
  * En production, la couche d'accès aux données est Prisma + MySQL
  * (voir prisma/schema.prisma). Les repositories ci-dessous isolent le SQL
  * pour rendre ce changement transparent pour la logique métier.

@@ -9,7 +9,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: 'FinGuard — Banque intelligente & détection de fraude',
+  title: 'Shield — Banque intelligente & détection de fraude',
   description:
     'Système intelligent de gestion des transactions bancaires et de détection de fraude par IA. Opérations bancaires sécurisées, analyse de risque en temps réel.',
 };

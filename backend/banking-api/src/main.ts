@@ -22,7 +22,7 @@ async function bootstrap() {
 
   // Documentation OpenAPI automatique — consultable sur /api/docs.
   const swaggerConfig = new DocumentBuilder()
-    .setTitle('FinGuard API')
+    .setTitle('Shield API')
     .setDescription(
       'API du Système Intelligent de Gestion des Transactions Bancaires et de Détection de Fraude. ' +
         'Trois espaces protégés par JWT + RBAC : `/api/customer/*` (CLIENT), `/api/employee/*` (EMPLOYEE), `/api/admin/*` (ADMIN).',
@@ -32,13 +32,13 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document, {
-    customSiteTitle: 'FinGuard — Documentation API',
+    customSiteTitle: 'Shield — Documentation API',
   });
 
   const port = Number(process.env.PORT) || 4000;
   await app.listen(port, '0.0.0.0');
   // eslint-disable-next-line no-console
-  console.log(`🛡️  FinGuard API démarrée sur http://localhost:${port}/api`);
+  console.log(`🛡️  Shield API démarrée sur http://localhost:${port}/api`);
 }
 
 bootstrap();
