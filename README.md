@@ -87,6 +87,9 @@ FINGUARD/
 
 ## 3. Démarrage
 
+📘 **Guide complet (installation pas à pas + utilisation des trois espaces) :**
+[`docs/GUIDE_UTILISATEUR.md`](docs/GUIDE_UTILISATEUR.md).
+
 ```bash
 # Backend
 cd backend/banking-api
