@@ -1,0 +1,320 @@
+// ============================================================================
+// FinGuard — Schéma de base de données de production (MySQL + Prisma)
+// ----------------------------------------------------------------------------
+// Ce fichier est le schéma canonique du système, tel que spécifié pour la
+// production (MySQL 8+, ORM Prisma). L'environnement d'exécution de
+// démonstration utilise un adaptateur SQLite (node:sqlite) dont le DDL
+// (src/database/schema.sql) correspond 1:1 à ce schéma.
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Utilisateurs & rôles (RBAC)
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CLIENT
+  EMPLOYEE
+  ADMIN
+}
+
+model User {
+  id          String    @id @default(cuid())
+  email       String    @unique
+  password    String
+  firstName   String
+  lastName    String
+  phone       String?
+  role        Role      @default(CLIENT)
+  isActive    Boolean   @default(true)
+  lastLoginAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  customer      Customer?
+  employee      Employee?
+  notifications Notification[]
+  auditLogs     AuditLog[]
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address   String?
+  city      String?
+  country   String   @default("Cameroun")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  accounts      Account[]
+  disputes      Dispute[]
+  beneficiaries Beneficiary[]
+}
+
+model Beneficiary {
+  id            String   @id @default(cuid())
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name          String
+  accountNumber String
+  bankLabel     String?
+  createdAt     DateTime @default(now())
+
+  @@unique([customerId, accountNumber])
+  @@index([customerId])
+}
+
+model Employee {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  position   String
+  department String
+  hiredAt    DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Comptes
+// ---------------------------------------------------------------------------
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+}
+
+model Account {
+  id            String        @id @default(cuid())
+  accountNumber String        @unique
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  balance       Decimal       @default(0) @db.Decimal(18, 2)
+  status        AccountStatus @default(ACTIVE)
+  dailyLimit    Decimal       @default(5000000) @db.Decimal(18, 2)
+  perTxLimit    Decimal       @default(2000000) @db.Decimal(18, 2)
+  frozenReason  String?
+  openedAt      DateTime      @default(now())
+  frozenAt      DateTime?
+
+  outgoing Transaction[] @relation("SourceAccount")
+  incoming Transaction[] @relation("TargetAccount")
+  alerts   FraudAlert[]
+}
+
+// ---------------------------------------------------------------------------
+// Transactions
+// ---------------------------------------------------------------------------
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  PAYMENT
+}
+
+enum TransactionStatus {
+  PENDING // En attente (vérification client requise)
+  PROCESSING // En cours de traitement
+  COMPLETED // Terminée
+  FAILED // Échouée
+  REJECTED // Rejetée
+  UNDER_REVIEW // En attente de révision (employé)
+  CANCELLED // Annulée
+}
+
+model Transaction {
+  id                   String            @id @default(cuid())
+  reference            String            @unique
+  type                 TransactionType
+  status               TransactionStatus @default(PROCESSING)
+  amount               Decimal           @db.Decimal(18, 2)
+  sourceAccountId      String?
+  sourceAccount        Account?          @relation("SourceAccount", fields: [sourceAccountId], references: [id])
+  targetAccountId      String?
+  targetAccount        Account?          @relation("TargetAccount", fields: [targetAccountId], references: [id])
+  beneficiaryName      String?
+  description          String?
+  externalReference    String?
+  requiresVerification Boolean           @default(false)
+  statusReason         String?
+  riskScore            Int?
+  riskLevel            RiskLevel?
+  createdByUserId      String?
+  reviewedByUserId     String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  completedAt          DateTime?
+
+  analysis      FraudAnalysis?
+  alerts        FraudAlert[]
+  disputes      Dispute[]
+  notifications Notification[]
+}
+
+// ---------------------------------------------------------------------------
+// Détection de fraude
+// ---------------------------------------------------------------------------
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum FraudAction {
+  AUTHORIZE
+  VERIFY
+  HOLD
+}
+
+model FraudAnalysis {
+  id            String      @id @default(cuid())
+  transactionId String      @unique
+  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  riskScore     Int
+  riskLevel     RiskLevel
+  action        FraudAction
+  indicators    Json
+  summary       String?     @db.Text
+  analyzedAt    DateTime    @default(now())
+}
+
+enum AlertStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  ESCALATED
+}
+
+enum AlertResolution {
+  APPROVED
+  REJECTED
+  HELD
+  ESCALATED
+}
+
+model FraudAlert {
+  id               String          @id @default(cuid())
+  transactionId    String
+  transaction      Transaction     @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  accountId        String?
+  account          Account?        @relation(fields: [accountId], references: [id])
+  level            RiskLevel
+  status           AlertStatus     @default(OPEN)
+  resolution       AlertResolution?
+  notes            String?         @db.Text
+  assignedToId     String?
+  escalatedToAdmin Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  resolvedAt       DateTime?
+}
+
+// ---------------------------------------------------------------------------
+// Litiges
+// ---------------------------------------------------------------------------
+
+enum DisputeStatus {
+  SUBMITTED // Soumis
+  UNDER_REVIEW // En cours d'examen
+  INVESTIGATING // En cours d'investigation
+  RESOLVED // Résolu
+  REJECTED // Rejeté
+  CLOSED // Clos
+}
+
+model Dispute {
+  id            String        @id @default(cuid())
+  reference     String        @unique
+  transactionId String
+  transaction   Transaction   @relation(fields: [transactionId], references: [id])
+  customerId    String
+  customer      Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  reason        String
+  description   String?       @db.Text
+  status        DisputeStatus @default(SUBMITTED)
+  resolution    String?       @db.Text
+  assignedToId  String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  resolvedAt    DateTime?
+
+  notes DisputeNote[]
+}
+
+model DisputeNote {
+  id        String   @id @default(cuid())
+  disputeId String
+  dispute   Dispute  @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  authorId  String?
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Notifications, audit, configuration
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  TRANSACTION_SUCCESS
+  TRANSACTION_FAILED
+  FRAUD_ALERT
+  VERIFICATION_REQUEST
+  SECURITY_ALERT
+  DISPUTE_UPDATE
+  SYSTEM
+}
+
+model Notification {
+  id            String         @id @default(cuid())
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type          NotificationType
+  title         String
+  message       String         @db.Text
+  transactionId String?
+  transaction   Transaction?   @relation(fields: [transactionId], references: [id])
+  isRead        Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entity      String?
+  entityId    String?
+  description String?  @db.Text
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+}
+
+model SystemConfig {
+  key         String   @id
+  value       String
+  description String?
+  category    String   @default("GENERAL")
+  updatedAt   DateTime @updatedAt
+}
+
+model FraudRule {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  points      Int      @default(10)
+  threshold   Decimal? @db.Decimal(18, 2)
+  param       String?
+  updatedAt   DateTime @updatedAt
+}
