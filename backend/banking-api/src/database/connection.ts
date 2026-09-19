@@ -28,6 +28,23 @@ export function getConnection(): any {
 function initSchema() {
   const ddl = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf-8');
   db.exec(ddl);
+  ensureTransactionPaymentColumns();
+}
+
+function ensureTransactionPaymentColumns() {
+  const columns = db
+    .prepare('PRAGMA table_info(transactions)')
+    .all()
+    .map((column: any) => column.name);
+
+  if (!columns.includes('payment_method')) {
+    db.exec(
+      "ALTER TABLE transactions ADD COLUMN payment_method TEXT CHECK (payment_method IS NULL OR payment_method IN ('ORANGE_MONEY','MTN_MOMO'))",
+    );
+  }
+  if (!columns.includes('payment_phone')) {
+    db.exec('ALTER TABLE transactions ADD COLUMN payment_phone TEXT');
+  }
 }
 
 export function resetDatabase() {

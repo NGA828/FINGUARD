@@ -7,6 +7,11 @@ export const TX_TYPE_LABELS: Record<string, string> = {
   PAYMENT: 'Paiement',
 };
 
+export const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  ORANGE_MONEY: 'Orange Money',
+  MTN_MOMO: 'MTN MoMo',
+};
+
 export const TX_STATUS_LABELS: Record<string, string> = {
   PENDING: 'En attente',
   PROCESSING: 'En cours de traitement',

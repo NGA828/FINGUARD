@@ -142,6 +142,8 @@ model Transaction {
   targetAccountId      String?
   targetAccount        Account?          @relation("TargetAccount", fields: [targetAccountId], references: [id])
   beneficiaryName      String?
+  paymentMethod        PaymentMethod?
+  paymentPhone         String?
   description          String?
   externalReference    String?
   requiresVerification Boolean           @default(false)
@@ -158,6 +160,11 @@ model Transaction {
   alerts        FraudAlert[]
   disputes      Dispute[]
   notifications Notification[]
+}
+
+enum PaymentMethod {
+  ORANGE_MONEY
+  MTN_MOMO
 }
 
 // ---------------------------------------------------------------------------

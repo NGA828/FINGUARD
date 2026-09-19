@@ -7,7 +7,7 @@ import { DisputesService } from '../disputes/disputes.service';
 import { CustomersService } from '../customers/customers.service';
 import { BeneficiariesService } from '../beneficiaries/beneficiaries.service';
 import { customers, query } from '../database/connection';
-import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, IsNumber } from 'class-validator';
+import { IsBoolean, IsIn, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min, IsNumber, Matches } from 'class-validator';
 
 export class InitiateTxDto {
   @IsIn(['DEPOSIT', 'WITHDRAWAL', 'TRANSFER', 'PAYMENT'], { message: 'Type de transaction invalide.' })
@@ -21,6 +21,10 @@ export class InitiateTxDto {
   @IsOptional() @IsString() accountId?: string;
   @IsOptional() @IsString() targetAccountNumber?: string;
   @IsOptional() @IsString() beneficiaryName?: string;
+  @IsOptional() @IsIn(['ORANGE_MONEY', 'MTN_MOMO'], { message: 'Moyen de paiement Mobile Money invalide.' })
+  paymentMethod?: 'ORANGE_MONEY' | 'MTN_MOMO';
+  @IsOptional() @IsString() @Matches(/^\+?[0-9 ]{8,15}$/, { message: 'Le numéro Mobile Money est invalide.' })
+  paymentPhone?: string;
   @IsOptional() @IsString() description?: string;
 }
 

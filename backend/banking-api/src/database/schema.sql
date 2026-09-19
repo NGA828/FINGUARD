@@ -60,6 +60,8 @@ CREATE TABLE IF NOT EXISTS transactions (
   source_account_id TEXT REFERENCES accounts(id),
   target_account_id TEXT REFERENCES accounts(id),
   beneficiary_name TEXT,
+  payment_method TEXT CHECK (payment_method IS NULL OR payment_method IN ('ORANGE_MONEY','MTN_MOMO')),
+  payment_phone TEXT,
   description TEXT,
   external_reference TEXT,
   requires_verification INTEGER NOT NULL DEFAULT 0,

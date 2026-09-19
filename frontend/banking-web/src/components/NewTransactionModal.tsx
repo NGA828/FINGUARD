@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDownToLine, ArrowUpFromLine, CreditCard, Send, Sparkles } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpFromLine, Check, CreditCard, Send, Smartphone, Sparkles } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Button, Field, Modal, RiskBadge } from '@/components/ui';
 import { useToast } from '@/components/toast';
@@ -14,6 +14,23 @@ const TYPES = [
   { id: 'WITHDRAWAL', label: 'Retrait', icon: ArrowUpFromLine },
   { id: 'TRANSFER', label: 'Virement', icon: Send },
   { id: 'PAYMENT', label: 'Paiement', icon: CreditCard },
+];
+
+const PAYMENT_METHODS = [
+  {
+    id: 'ORANGE_MONEY',
+    label: 'Orange Money',
+    shortLabel: 'OM',
+    iconClass: 'bg-orange-500 text-white',
+    activeClass: 'border-orange-400 bg-orange-50 ring-2 ring-orange-100',
+  },
+  {
+    id: 'MTN_MOMO',
+    label: 'MTN MoMo',
+    shortLabel: 'MTN',
+    iconClass: 'bg-yellow-400 text-slate-950',
+    activeClass: 'border-yellow-400 bg-yellow-50 ring-2 ring-yellow-100',
+  },
 ];
 
 export default function NewTransactionModal({
@@ -34,6 +51,8 @@ export default function NewTransactionModal({
   const [amount, setAmount] = useState('');
   const [target, setTarget] = useState('');
   const [beneficiary, setBeneficiary] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('ORANGE_MONEY');
+  const [paymentPhone, setPaymentPhone] = useState('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -51,6 +70,8 @@ export default function NewTransactionModal({
       setAmount('');
       setTarget('');
       setBeneficiary('');
+      setPaymentMethod('ORANGE_MONEY');
+      setPaymentPhone('');
       setDescription('');
     }
   }, [open, initialType]);
@@ -65,6 +86,8 @@ export default function NewTransactionModal({
         amount: Number(amount),
         targetAccountNumber: type === 'TRANSFER' ? target : undefined,
         beneficiaryName: type === 'PAYMENT' ? beneficiary : undefined,
+        paymentMethod: ['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(type) ? paymentMethod : undefined,
+        paymentPhone: ['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(type) ? paymentPhone : undefined,
         description: description || undefined,
       });
       setResult(res);
@@ -176,10 +199,59 @@ export default function NewTransactionModal({
               </Field>
             </>
           )}
-          {type === 'PAYMENT' && (
-            <Field label="Bénéficiaire / commerçant">
-              <input required value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)} placeholder="Supermarché Santa Lucia" className="input" />
-            </Field>
+          {['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(type) && (
+            <>
+              {type === 'PAYMENT' && (
+                <Field label="Bénéficiaire / commerçant">
+                  <input required value={beneficiary} onChange={(e) => setBeneficiary(e.target.value)} placeholder="Supermarché Santa Lucia" className="input" />
+                </Field>
+              )}
+              <Field label="Moyen de paiement">
+                <div className="grid grid-cols-2 gap-3">
+                  {PAYMENT_METHODS.map((method) => {
+                    const selected = paymentMethod === method.id;
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(method.id)}
+                        aria-pressed={selected}
+                        className={`relative flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+                          selected
+                            ? method.activeClass
+                            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${method.iconClass}`}>
+                          <span className="text-[11px] font-black">{method.shortLabel}</span>
+                        </span>
+                        <span>
+                          <span className="block text-xs font-black text-navy-900">{method.label}</span>
+                          <span className="mt-0.5 flex items-center gap-1 text-[10px] font-semibold text-slate-400">
+                            <Smartphone className="h-3 w-3" /> Mobile Money
+                          </span>
+                        </span>
+                        {selected && (
+                          <span className="absolute right-2 top-2 flex h-4 w-4 items-center justify-center rounded-full bg-brand-600 text-white">
+                            <Check className="h-3 w-3" />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </Field>
+              <Field label="Numéro Mobile Money" hint="L'opération sera simulée dans cet environnement.">
+                <input
+                  required
+                  type="tel"
+                  value={paymentPhone}
+                  onChange={(e) => setPaymentPhone(e.target.value)}
+                  placeholder="+237 6 90 00 00 00"
+                  className="input"
+                />
+              </Field>
+            </>
           )}
 
           <Field label="Description (optionnel)">

@@ -262,10 +262,10 @@ export class EmployeeController {
    * fictive sans aucun mouvement de fonds ni écriture en base.
    */
   @Post('transactions/simulate')
-  simulateFraud(@CurrentUser() user: any, @Body() dto: SimulateFraudDto, @RequestMeta() meta: any) {
+  async simulateFraud(@CurrentUser() user: any, @Body() dto: SimulateFraudDto, @RequestMeta() meta: any) {
     const account = accountsRepo.byId(dto.accountId);
     if (!account) throw new NotFoundException('Compte introuvable.');
-    const result = this.fraud.analyze(
+    const result = await this.fraud.analyzeWithAi(
       { id: 'simulation', amount: dto.amount, type: dto.type, createdAt: nowIso(), sourceAccountId: account.id },
       account,
     );

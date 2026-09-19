@@ -6,7 +6,7 @@ import { Search } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatXAF } from '@/lib/format';
-import { TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
+import { PAYMENT_METHOD_LABELS, TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
 import { Card, EmptyState, RiskBadge, SkeletonRows, TxStatusBadge } from '@/components/ui';
 import { PageIn } from '@/components/motion';
 import ReviewModal from '@/components/ReviewModal';
@@ -73,6 +73,7 @@ export default function EmployeeTransactions() {
                   <p className="text-[13px] font-bold text-navy-900">
                     {TX_TYPE_LABELS[t.type]} · {t.reference}
                     {t.beneficiaryName ? ` · ${t.beneficiaryName}` : ''}
+                    {t.paymentMethod ? ` · ${PAYMENT_METHOD_LABELS[t.paymentMethod] || t.paymentMethod}` : ''}
                   </p>
                   <p className="text-[11px] text-slate-400">{formatDateTime(t.createdAt)}</p>
                 </div>

@@ -6,7 +6,7 @@ import { FileDown, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { api, downloadFile } from '@/lib/api';
 import { useApi } from '@/lib/hooks';
 import { formatDateTime, formatXAF } from '@/lib/format';
-import { RISK_LABELS, TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
+import { PAYMENT_METHOD_LABELS, RISK_LABELS, TX_STATUS_LABELS, TX_TYPE_LABELS } from '@/lib/labels';
 import { Button, Card, EmptyState, Modal, RiskBadge, SkeletonRows, TxStatusBadge } from '@/components/ui';
 import { PageIn } from '@/components/motion';
 import { useToast } from '@/components/toast';
@@ -142,6 +142,7 @@ export default function CustomerTransactions() {
                   <p className="text-[13.5px] font-bold text-navy-900">
                     {TX_TYPE_LABELS[t.type]}
                     {t.beneficiaryName ? ` · ${t.beneficiaryName}` : ''}
+                    {t.paymentMethod ? ` · ${PAYMENT_METHOD_LABELS[t.paymentMethod] || t.paymentMethod}` : ''}
                   </p>
                   <p className="text-[11px] text-slate-400">
                     {formatDateTime(t.createdAt)} · Réf. {t.reference}

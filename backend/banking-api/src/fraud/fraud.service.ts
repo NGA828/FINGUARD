@@ -10,6 +10,7 @@ import {
 } from '../database/connection';
 import { nowIso, uuid } from '../common/utils';
 import { DEFAULT_FRAUD_RULES } from '../common/constants';
+import { LlmService } from '../assistant/llm.service';
 
 export interface FraudIndicator {
   code: string;
@@ -24,6 +25,7 @@ export interface FraudResult {
   action: 'AUTHORIZE' | 'VERIFY' | 'HOLD';
   indicators: FraudIndicator[];
   summary: string;
+  aiAssessment?: { riskAdjustment: number; reason: string };
 }
 
 /**
@@ -37,6 +39,8 @@ export interface FraudResult {
  */
 @Injectable()
 export class FraudService {
+  constructor(private readonly llm: LlmService) {}
+
   /** Analyse une transaction et retourne l'évaluation de risque. */
   analyze(tx: any, account: any): FraudResult {
     const rules = fraudRules.all('is_active = 1');
@@ -144,6 +148,45 @@ export class FraudService {
 
     const summary = this.buildSummary(level, action, indicators);
     return { riskScore: score, riskLevel: level, action, indicators, summary };
+  }
+
+  async analyzeWithAi(tx: any, account: any): Promise<FraudResult> {
+    const base = this.analyze(tx, account);
+    const recentTransactionCount = transactions.count(
+      'source_account_id = ? AND created_at >= ?',
+      [account.id, new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()],
+    );
+    const assessment = await this.llm.assessFraud({
+      type: tx.type,
+      amount: Number(tx.amount),
+      beneficiaryName: tx.beneficiaryName,
+      paymentMethod: tx.paymentMethod,
+      paymentPhone: tx.paymentPhone,
+      accountBalance: Number(account.balance),
+      dailyLimit: Number(account.dailyLimit),
+      recentTransactionCount,
+    });
+    if (!assessment) return base;
+
+    const score = Math.min(100, base.riskScore + assessment.riskAdjustment);
+    const cfg = this.config();
+    const { level, action } = this.classify(score, cfg);
+    const indicator = {
+      code: 'AI_CONTEXTUAL_RISK',
+      label: 'Analyse contextuelle IA',
+      points: assessment.riskAdjustment,
+      detail: assessment.reason,
+    };
+    const indicators = assessment.riskAdjustment > 0 ? [...base.indicators, indicator] : base.indicators;
+    return {
+      ...base,
+      riskScore: score,
+      riskLevel: level,
+      action,
+      indicators,
+      summary: this.buildSummary(level, action, indicators),
+      aiAssessment: assessment,
+    };
   }
 
   persist(txId: string, result: FraudResult) {

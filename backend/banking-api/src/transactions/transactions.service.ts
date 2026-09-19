@@ -32,6 +32,8 @@ export interface InitiateTxInput {
   accountId?: string;
   targetAccountNumber?: string;
   beneficiaryName?: string;
+  paymentMethod?: 'ORANGE_MONEY' | 'MTN_MOMO';
+  paymentPhone?: string;
   description?: string;
 }
 
@@ -109,6 +111,12 @@ export class TransactionsService {
     if (input.type === 'PAYMENT' && !input.beneficiaryName) {
       throw new BadRequestException('Le nom du bénéficiaire/commerçant est requis.');
     }
+    if (['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(input.type) && !input.paymentMethod) {
+      throw new BadRequestException('Le moyen de paiement est requis.');
+    }
+    if (['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(input.type) && !input.paymentPhone) {
+      throw new BadRequestException('Le numéro Mobile Money est requis.');
+    }
 
     // --- Solde et limite quotidienne ---
     if (isOutgoing) {
@@ -144,6 +152,12 @@ export class TransactionsService {
       targetAccountId:
         input.type === 'TRANSFER' ? targetAccount.id : input.type === 'DEPOSIT' ? account.id : null,
       beneficiaryName: input.beneficiaryName ?? null,
+      paymentMethod: ['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(input.type)
+        ? input.paymentMethod ?? null
+        : null,
+      paymentPhone: ['DEPOSIT', 'WITHDRAWAL', 'PAYMENT'].includes(input.type)
+        ? input.paymentPhone?.replace(/\s+/g, '') ?? null
+        : null,
       description: input.description ?? null,
       requiresVerification: false,
       createdByUserId: user.sub,
@@ -161,7 +175,7 @@ export class TransactionsService {
     });
 
     // --- Étape 3 & 4 : analyse de fraude et évaluation du risque ---
-    const result = this.fraud.analyze(
+    const result = await this.fraud.analyzeWithAi(
       { ...transaction, targetAccountId: targetAccount?.id ?? null },
       account,
     );
