@@ -123,7 +123,7 @@ export class CustomerController {
            FROM transactions
            WHERE (source_account_id IN (${ph}) OR target_account_id IN (${ph}))
              AND status = 'COMPLETED'
-             AND created_at >= DATE('now','-30 days')`,
+             AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)`,
           [...accountIds, ...accountIds],
         )[0]
       : { deposits: 0, withdrawals: 0, transfers: 0, payments: 0 };
@@ -137,7 +137,7 @@ export class CustomerController {
            WHERE source_account_id IN (${ph})
              AND status = 'COMPLETED'
              AND type != 'DEPOSIT'
-             AND created_at >= DATE('now','-30 days')
+             AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)
            GROUP BY type`,
           accountIds,
         )

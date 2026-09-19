@@ -114,7 +114,7 @@ export class EmployeeController {
     const activeAccounts = query("SELECT COUNT(*) AS c FROM accounts WHERE status = 'ACTIVE'")[0].c;
     const txToday = query(
       `SELECT COUNT(*) AS count, COALESCE(SUM(amount),0) AS volume
-       FROM transactions WHERE DATE(created_at) = DATE('now')`,
+       FROM transactions WHERE created_at >= UTC_DATE() AND created_at < DATE_ADD(UTC_DATE(), INTERVAL 1 DAY)`,
     )[0];
     const pendingReview = query(
       `SELECT COUNT(*) AS c FROM transactions WHERE status IN ('PENDING','UNDER_REVIEW')`,

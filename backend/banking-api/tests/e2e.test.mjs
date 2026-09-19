@@ -65,6 +65,20 @@ test('RBAC : les espaces /admin sont fermés à l’employé, /customer fermé �
   assert.equal((await req('GET', '/admin/dashboard', { token: admin })).status, 200);
 });
 
+test('tableau de bord employé : statistiques et données récentes chargées', async () => {
+  const emp = await login('marie.kouassi@shield.com', 'Employe123!');
+  const res = await req('GET', '/employee/dashboard', { token: emp });
+  assert.equal(res.status, 200);
+  assert.ok(res.data.stats.totalCustomers > 0);
+  assert.ok(res.data.stats.activeAccounts > 0);
+  assert.ok(res.data.stats.pendingReview > 0);
+  assert.ok(res.data.stats.suspicious > 0);
+  assert.ok(res.data.stats.openDisputes > 0);
+  assert.ok(Array.isArray(res.data.dailyStats) && res.data.dailyStats.length > 0);
+  assert.ok(Array.isArray(res.data.recentTransactions) && res.data.recentTransactions.length > 0);
+  assert.ok(Array.isArray(res.data.recentAlerts) && res.data.recentAlerts.length > 0);
+});
+
 test('flux : petit dépôt autorisé directement (risque faible)', async () => {
   const client = await login('client@demo.com', 'Client123!');
   const res = await req('POST', '/customer/transactions', {

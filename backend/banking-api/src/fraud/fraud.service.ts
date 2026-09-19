@@ -253,7 +253,7 @@ export class FraudService {
     const trend = query(
       `SELECT DATE(analyzed_at) AS d, risk_level, COUNT(*) AS c
        FROM fraud_analyses
-       WHERE analyzed_at >= DATE('now', '-14 days')
+       WHERE analyzed_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 14 DAY)
        GROUP BY DATE(analyzed_at), risk_level
        ORDER BY d ASC`,
     );
