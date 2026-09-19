@@ -1,6 +1,6 @@
-#  Tests Postman / Newman — FinGuard
+#  Tests Postman / Newman — Shield
 
-Suite de tests automatisée de l'API FinGuard (54 requêtes, 111 assertions), organisée en
+Suite de tests automatisée de l'API Shield (54 requêtes, 111 assertions), organisée en
 cinq dossiers exécutés dans l'ordre :
 
 | Dossier | Contenu |
@@ -14,8 +14,8 @@ cinq dossiers exécutés dans l'ordre :
 ## Exécution dans Postman (GUI)
 
 1. Démarrer l'API : `cd ../backend/banking-api && npm run start` (port 4000).
-2. Dans Postman : **Import** → `FinGuard-API.postman_collection.json`
-   (et, optionnel, `FinGuard-Local.postman_environment.json`).
+2. Dans Postman : **Import** → `Shield-API.postman_collection.json`
+   (et, optionnel, `Shield-Local.postman_environment.json`).
 3. Lancer **Run collection** dans l'ordre des dossiers (le dossier 0 connecte les trois
    rôles et prépare les limites ; les suivants s'appuient sur ces variables).
 
@@ -24,7 +24,7 @@ cinq dossiers exécutés dans l'ordre :
 ```bash
 cd postman
 npm install
-npm test          # cli + rapport HTML dans reports/FinGuard-API-report.html
+npm test          # cli + rapport HTML dans reports/Shield-API-report.html
 ```
 
 ## Captures d'écran des exécutions
@@ -34,7 +34,7 @@ npm test          # cli + rapport HTML dans reports/FinGuard-API-report.html
 Les captures `postman-ui-*.png` de `docs/tests-postman/` reproduisent l'interface de
 l'application Postman (sidebar de collection, barre d'URL + bouton **Send**, onglets de
 réponse avec pastille de statut et corps JSON/CSV, vue **Runner**). Les corps affichés
-sont les **vraies réponses** renvoyées par l'API FinGuard lors de l'exécution :
+sont les **vraies réponses** renvoyées par l'API Shield lors de l'exécution :
 
 | Capture | Scénario | Statut |
 |---|---|---|

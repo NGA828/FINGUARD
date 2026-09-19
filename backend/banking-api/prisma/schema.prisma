@@ -1,5 +1,5 @@
 // ============================================================================
-// FinGuard — Schéma de base de données de production (MySQL + Prisma)
+// Shield — Schéma de base de données de production (MySQL + Prisma)
 // ----------------------------------------------------------------------------
 // Ce fichier est le schéma canonique du système, tel que spécifié pour la
 // production (MySQL 8+, ORM Prisma). L'environnement d'exécution de

@@ -17,7 +17,7 @@ export class AdministrationService {
   ) {}
 
   listConfig() {
-    return systemConfig.all(undefined, [], 'category ASC, key ASC');
+    return systemConfig.all(undefined, [], 'category ASC, `key` ASC');
   }
 
   updateConfig(values: Record<string, string>, actorId: string, meta?: any) {

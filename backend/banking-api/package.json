@@ -1,11 +1,12 @@
 {
   "name": "finguard-banking-api",
   "version": "1.0.0",
-  "description": "FinGuard - API bancaire NestJS avec moteur intelligent de détection de fraude",
+  "description": "Shield - API bancaire NestJS avec moteur intelligent de détection de fraude",
   "private": true,
   "scripts": {
     "start": "ts-node src/main.ts",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "db:create": "ts-node scripts/create-mysql-database.ts",
     "db:init": "ts-node scripts/init-db.ts",
     "db:seed": "ts-node scripts/seed.ts",
     "db:reset": "ts-node scripts/init-db.ts --reset && ts-node scripts/seed.ts",
@@ -23,6 +24,7 @@
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "mysql2": "^3.11.5",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.2",

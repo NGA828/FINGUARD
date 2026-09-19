@@ -20,7 +20,7 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "prisma/**/*"],
+  "include": ["src/**/*", "scripts/**/*", "prisma/**/*"],
   "ts-node": {
     "transpileOnly": true
   }

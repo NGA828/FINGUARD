@@ -1,6 +1,7 @@
 -- ============================================================================
--- FinGuard — DDL d'exécution (SQLite via node:sqlite)
--- Correspond 1:1 au schéma MySQL de production : prisma/schema.prisma
+-- Shield — DDL d'exécution.
+-- The MySQL adapter normalizes SQLite-compatible TEXT declarations to
+-- indexed VARCHAR columns before executing this schema.
 -- ============================================================================
 
 PRAGMA foreign_keys = ON;
@@ -148,7 +149,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 CREATE TABLE IF NOT EXISTS system_config (
-  key TEXT PRIMARY KEY,
+  `key` TEXT PRIMARY KEY,
   value TEXT NOT NULL,
   description TEXT,
   category TEXT DEFAULT 'GENERAL',

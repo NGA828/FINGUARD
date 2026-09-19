@@ -34,7 +34,7 @@ export class BeneficiariesService {
       customerId: customer.id,
       name: dto.name.trim(),
       accountNumber,
-      bankLabel: dto.bankLabel?.trim() || 'FINGUARD',
+      bankLabel: dto.bankLabel?.trim() || 'Shield',
       createdAt: nowIso(),
     });
   }

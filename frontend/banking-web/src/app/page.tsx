@@ -534,7 +534,7 @@ export default function LandingPage() {
                   <span className="h-3 w-3 rounded-full bg-amber-500/80" />
                   <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
                   <div className="ml-4 flex-1 rounded-md bg-white/5 px-3 py-1 text-[11px] text-slate-500">
-                    app.finguard.cm/customer
+                    app.shield.cm/customer
                   </div>
                 </div>
                 <Image src="/images/app-preview.jpg" alt="Aperçu du tableau de bord Shield" width={1280} height={720} className="w-full" />

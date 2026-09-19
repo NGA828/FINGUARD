@@ -2,9 +2,9 @@
   "name": "finguard-postman-tests",
   "version": "1.0.0",
   "private": true,
-  "description": "Collection Postman + exécution Newman de l'API FinGuard (authentification, CLIENT, EMPLOYÉ, ADMIN, RBAC).",
+  "description": "Collection Postman + exécution Newman de l'API Shield (authentification, CLIENT, EMPLOYÉ, ADMIN, RBAC).",
   "scripts": {
-    "test": "newman run FinGuard-API.postman_collection.json -r cli,htmlextra --reporter-htmlextra-export ./reports/FinGuard-API-report.html --reporter-htmlextra-title 'FinGuard — Résultats des tests API'",
+    "test": "newman run FinGuard-API.postman_collection.json -r cli,htmlextra --reporter-htmlextra-export ./reports/FinGuard-API-report.html --reporter-htmlextra-title 'Shield — Résultats des tests API'",
     "test:quiet": "newman run FinGuard-API.postman_collection.json -r cli --silent"
   },
   "devDependencies": {

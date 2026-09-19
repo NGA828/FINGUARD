@@ -1,6 +1,6 @@
 /**
- * Génère la collection Postman « FinGuard — API Bancaire & Détection de Fraude ».
- * Usage : node generate-collection.mjs  →  FinGuard-API.postman_collection.json
+ * Génère la collection Postman « Shield — API Bancaire & Détection de Fraude ».
+ * Usage : node generate-collection.mjs  →  Shield-API.postman_collection.json
  *
  * La collection couvre : authentification, espaces CLIENT / EMPLOYÉ / ADMIN,
  * bénéficiaires, relevés CSV, exports admin, simulateur de fraude, et RBAC.
@@ -45,7 +45,7 @@ const authFolder = {
       name: 'Connexion administrateur',
       method: 'POST',
       path: '/auth/login',
-      body: { email: 'admin@finguard.com', password: 'Admin123!' },
+      body: { email: 'admin@shield.com', password: 'Admin123!' },
       tests: [
         "pm.test('Statut 201 — connexion réussie', () => pm.response.to.have.status(201));",
         'const body = pm.response.json();',
@@ -58,7 +58,7 @@ const authFolder = {
       name: 'Connexion employé',
       method: 'POST',
       path: '/auth/login',
-      body: { email: 'marie.kouassi@finguard.com', password: 'Employe123!' },
+      body: { email: 'marie.kouassi@shield.com', password: 'Employe123!' },
       tests: [
         "pm.test('Statut 201 — connexion réussie', () => pm.response.to.have.status(201));",
         'const body = pm.response.json();',
@@ -274,7 +274,7 @@ const customerFolder = {
       method: 'POST',
       path: '/customer/beneficiaries',
       token: 'clientToken',
-      body: { name: 'Test Postman {{$timestamp}}', accountNumber: 'FG-10000105', bankLabel: 'FinGuard Bank' },
+      body: { name: 'Test Postman {{$timestamp}}', accountNumber: 'FG-10000105', bankLabel: 'Shield Bank' },
       tests: [
         "pm.test('Statut 201 — bénéficiaire créé', () => pm.response.to.have.status(201));",
         'const b = pm.response.json();',
@@ -655,10 +655,10 @@ const rbacFolder = {
 /* ------------------------------------------------------------------ */
 const collection = {
   info: {
-    _postman_id: 'finguard-api-collection-v1',
-    name: 'FinGuard — API Bancaire & Détection de Fraude',
+    _postman_id: 'shield-api-collection-v1',
+    name: 'Shield — API Bancaire & Détection de Fraude',
     description:
-      'Collection de tests complète de l’API FinGuard (NestJS, port 4000).\n\n' +
+      'Collection de tests complète de l’API Shield (NestJS, port 4000).\n\n' +
       'Ordre d’exécution : 0 · Authentification → 1 · Espace CLIENT → 2 · Espace EMPLOYÉ → 3 · Espace ADMIN → 4 · Sécurité RBAC.\n\n' +
       'Prérequis : API démarrée (`npm run start` dans backend/banking-api) sur {{baseUrl}}. Les jetons JWT sont stockés automatiquement en variables de collection. Exécution CLI : `npm run test:postman`.',
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',

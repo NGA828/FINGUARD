@@ -5,7 +5,7 @@
  * notifications, journaux d'audit, configuration et règles de fraude.
  */
 import * as bcrypt from 'bcryptjs';
-import { resetDatabase, tx } from '../src/database/connection';
+import { clearDatabaseData, resetDatabase, tx } from '../src/database/connection';
 import {
   accounts,
   auditLogs,
@@ -152,14 +152,15 @@ function audit(action: string, opts: { userId?: string; entity?: string; entityI
     entityId: opts.entityId ?? null,
     description: opts.description ?? null,
     ip: '196.207.14.88',
-    userAgent: 'Mozilla/5.0 (FinGuard Web)',
+    userAgent: 'Mozilla/5.0 (Shield Web)',
     createdAt: opts.createdAt ?? nowIso(),
   });
 }
 
 async function main() {
-  console.log('🌱 Seed FinGuard : réinitialisation de la base...');
-  resetDatabase();
+  console.log('🌱 Seed Shield : réinitialisation de la base...');
+  if (process.env.SKIP_DB_RESET !== '1') resetDatabase();
+  else clearDatabaseData();
 
   tx(() => {
     // ---------------------------------------------------------------
@@ -182,12 +183,12 @@ async function main() {
     // ---------------------------------------------------------------
     // Utilisateurs
     // ---------------------------------------------------------------
-    const admin = makeUser('ADMIN', 'admin@finguard.com', 'Admin123!', 'Serge', 'Onana', '+237 6 99 00 00 01', iso(120, 9));
+    const admin = makeUser('ADMIN', 'admin@shield.com', 'Admin123!', 'Serge', 'Onana', '+237 6 99 00 00 01', iso(120, 9));
     employees.insert({ id: uuid(), userId: admin.id, position: 'Administrateur système', department: 'Direction des systèmes d’information', hiredAt: iso(120, 9) });
 
-    const emp1 = makeUser('EMPLOYEE', 'marie.kouassi@finguard.com', 'Employe123!', 'Marie', 'Kouassi', '+237 6 99 11 22 33', iso(100, 9));
+    const emp1 = makeUser('EMPLOYEE', 'marie.kouassi@shield.com', 'Employe123!', 'Marie', 'Kouassi', '+237 6 99 11 22 33', iso(100, 9));
     employees.insert({ id: uuid(), userId: emp1.id, position: 'Chargée des opérations', department: 'Opérations bancaires', hiredAt: iso(100, 9) });
-    const emp2 = makeUser('EMPLOYEE', 'emmanuel.njoya@finguard.com', 'Employe123!', 'Emmanuel', 'Njoya', '+237 6 77 44 55 66', iso(90, 9));
+    const emp2 = makeUser('EMPLOYEE', 'emmanuel.njoya@shield.com', 'Employe123!', 'Emmanuel', 'Njoya', '+237 6 77 44 55 66', iso(90, 9));
     employees.insert({ id: uuid(), userId: emp2.id, position: 'Chargé de conformité', department: 'Conformité et risques', hiredAt: iso(90, 9) });
 
     // Clients
@@ -229,9 +230,9 @@ async function main() {
 
     // Bénéficiaires enregistrés par Jean Kamga (client de démonstration).
     for (const b of [
-      { name: 'Amina Ndong', account: acctAmina.accountNumber, bankLabel: 'FINGUARD' },
-      { name: 'Paul Essomba', account: acctPaul.accountNumber, bankLabel: 'FINGUARD' },
-      { name: 'Loyer Akwa — SCI Douala', account: acctEstelle.accountNumber, bankLabel: 'FINGUARD' },
+      { name: 'Amina Ndong', account: acctAmina.accountNumber, bankLabel: 'Shield' },
+      { name: 'Paul Essomba', account: acctPaul.accountNumber, bankLabel: 'Shield' },
+      { name: 'Loyer Akwa — SCI Douala', account: acctEstelle.accountNumber, bankLabel: 'Shield' },
     ]) {
       beneficiaries.insert({
         id: uuid(),
@@ -516,7 +517,7 @@ async function main() {
     // ---------------------------------------------------------------
     // Journaux d'audit
     // ---------------------------------------------------------------
-    audit('LOGIN', { userId: emp1.id, entity: 'USER', entityId: emp1.id, description: 'Connexion de marie.kouassi@finguard.com', createdAt: iso(0, 8) });
+    audit('LOGIN', { userId: emp1.id, entity: 'USER', entityId: emp1.id, description: 'Connexion de marie.kouassi@shield.com', createdAt: iso(0, 8) });
     audit('ACCOUNT_FROZEN', { userId: emp2.id, entity: 'ACCOUNT', entityId: acctIbrahim.id, description: `Gel du compte ${acctIbrahim.accountNumber} — suspicion de fraude`, createdAt: iso(2, 15) });
     audit('TRANSACTION_CREATED', { userId: cJeanUser.id, entity: 'TRANSACTION', entityId: bigTx.id, description: `Virement de 2 000 000 XAF initié (réf. ${bigTx.reference})`, createdAt: iso(1, 18, 42) });
     audit('TRANSACTION_HELD', { entity: 'TRANSACTION', entityId: bigTx.id, description: `Transaction mise en attente (score 85) — réf. ${bigTx.reference}`, createdAt: iso(1, 18, 42) });
@@ -535,9 +536,9 @@ async function main() {
 
   console.log('✅ Seed terminé.');
   console.log('👤 Comptes de démonstration :');
-  console.log('   Admin    : admin@finguard.com / Admin123!');
-  console.log('   Employé  : marie.kouassi@finguard.com / Employe123!');
-  console.log('   Employé  : emmanuel.njoya@finguard.com / Employe123!');
+  console.log('   Admin    : admin@shield.com / Admin123!');
+  console.log('   Employé  : marie.kouassi@shield.com / Employe123!');
+  console.log('   Employé  : emmanuel.njoya@shield.com / Employe123!');
   console.log('   Client   : client@demo.com / Client123!');
   process.exit(0);
 }

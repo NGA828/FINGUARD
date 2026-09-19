@@ -53,8 +53,8 @@ Ports utilisés : **4000** (API) et **3000** (site web).
 ### 2.1 Récupérer le code
 
 ```bash
-git clone https://github.com/NGA828/FINGUARD.git
-cd FINGUARD
+git clone https://github.com/NGA828/SHIELD.git
+cd SHIELD
 ```
 
 ### 2.2 Backend (API NestJS)
@@ -104,7 +104,7 @@ port 4000 : aucun réglage CORS ou d'adresse à faire.
 
 1. Ouvrez http://localhost:3000 → la page d'accueil Shield s'affiche.
 2. Cliquez sur **« Accéder à mon espace »** (ou allez sur `/auth/login`).
-3. Connectez-vous avec `admin@finguard.com` / `Admin123!` → le tableau de bord
+3. Connectez-vous avec `admin@shield.com` / `Admin123!` → le tableau de bord
    administrateur apparaît. ✔️ L'installation fonctionne.
 
 ---
@@ -126,11 +126,11 @@ FraudAnalysis, FraudAlert, Dispute, Notification, AuditLog, SystemConfig, FraudR
 
 ```bash
 # 1. Créer la base MySQL (exemple)
-mysql -u root -p -e "CREATE DATABASE finguard CHARACTER SET utf8mb4;"
+mysql -u root -p -e "CREATE DATABASE shield CHARACTER SET utf8mb4;"
 
 # 2. Déclarer la connexion
 cd backend/banking-api
-echo 'DATABASE_URL="mysql://utilisateur:motdepasse@localhost:3306/finguard"' > .env
+echo 'DATABASE_URL="mysql://utilisateur:motdepasse@localhost:3306/shield"' > .env
 
 # 3. Pousser le schéma
 npx prisma db push --schema prisma/schema.prisma
@@ -145,7 +145,7 @@ Prisma, les entités et champs étant identiques.
 ```ini
 PORT=4000
 JWT_SECRET=changez-moi-en-production
-SQLITE_PATH=./data/finguard.db
+SQLITE_PATH=./data/shield.db
 ```
 
 ---
@@ -154,9 +154,9 @@ SQLITE_PATH=./data/finguard.db
 
 | Rôle | E-mail | Mot de passe |
 |---|---|---|
-| **Administrateur** | `admin@finguard.com` | `Admin123!` |
-| **Employé** | `marie.kouassi@finguard.com` | `Employe123!` |
-| **Employé** | `emmanuel.njoya@finguard.com` | `Employe123!` |
+| **Administrateur** | `admin@shield.com` | `Admin123!` |
+| **Employé** | `marie.kouassi@shield.com` | `Employe123!` |
+| **Employé** | `emmanuel.njoya@shield.com` | `Employe123!` |
 | **Client** | `client@demo.com` | `Client123!` |
 | **Client** | `amina.ndong@demo.com` | `Client123!` |
 
@@ -222,7 +222,7 @@ Transactions, Bénéficiaires, Litiges, Mon profil*.
 
 ## 7. Utilisation — Espace EMPLOYÉ
 
-Connectez-vous avec `marie.kouassi@finguard.com` / `Employe123!`. Menu : *Tableau de
+Connectez-vous avec `marie.kouassi@shield.com` / `Employe123!`. Menu : *Tableau de
 bord, Clients, Comptes, Transactions, Suspicieuses, Litiges, Rapports*.
 
 ### Tableau de bord + Simulateur de fraude
@@ -252,7 +252,7 @@ bord, Clients, Comptes, Transactions, Suspicieuses, Litiges, Rapports*.
 
 ## 8. Utilisation — Espace ADMIN
 
-Connectez-vous avec `admin@finguard.com` / `Admin123!`. Menu : *Tableau de bord,
+Connectez-vous avec `admin@shield.com` / `Admin123!`. Menu : *Tableau de bord,
 Employés, Clients, Fraude & règles, Configuration, Journaux d'audit, Rapports*.
 
 - **Tableau de bord** : vue système (clients, employés, volume, risques, croissance).

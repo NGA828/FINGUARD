@@ -29,9 +29,9 @@ export default function AdminReports() {
         if (exportStatus) qs.set('status', exportStatus);
         if (exportType) qs.set('type', exportType);
         const suffix = qs.toString() ? `?${qs}` : '';
-        await downloadFile(`/admin/reports/transactions.csv${suffix}`, 'transactions-finguard.csv');
+        await downloadFile(`/admin/reports/transactions.csv${suffix}`, 'transactions-shield.csv');
       } else {
-        await downloadFile('/admin/reports/audit.csv', 'audit-finguard.csv');
+        await downloadFile('/admin/reports/audit.csv', 'audit-shield.csv');
       }
       push('Export CSV téléchargé avec succès.', 'success');
     } catch (e: any) {

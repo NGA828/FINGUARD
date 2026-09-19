@@ -11,8 +11,8 @@ import { useToast } from '@/components/toast';
 
 const demoAccounts = [
   { label: 'Client', email: 'client@demo.com', password: 'Client123!', icon: UserRound, cls: 'text-brand-600 bg-brand-50' },
-  { label: 'Employé', email: 'marie.kouassi@finguard.com', password: 'Employe123!', icon: Wrench, cls: 'text-sky-600 bg-sky-50' },
-  { label: 'Admin', email: 'admin@finguard.com', password: 'Admin123!', icon: ShieldCheck, cls: 'text-violet-600 bg-violet-50' },
+  { label: 'Employé', email: 'marie.kouassi@shield.com', password: 'Employe123!', icon: Wrench, cls: 'text-sky-600 bg-sky-50' },
+  { label: 'Admin', email: 'admin@shield.com', password: 'Admin123!', icon: ShieldCheck, cls: 'text-violet-600 bg-violet-50' },
 ];
 
 export default function LoginPage() {

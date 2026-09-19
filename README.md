@@ -114,9 +114,9 @@ Production MySQL : `npx prisma db push --schema prisma/schema.prisma` après avo
 
 | Rôle | E-mail | Mot de passe |
 |---|---|---|
-| **Administrateur** | admin@finguard.com | Admin123! |
-| **Employé** | marie.kouassi@finguard.com | Employe123! |
-| **Employé** | emmanuel.njoya@finguard.com | Employe123! |
+| **Administrateur** | admin@shield.com | Admin123! |
+| **Employé** | marie.kouassi@shield.com | Employe123! |
+| **Employé** | emmanuel.njoya@shield.com | Employe123! |
 | **Client** | client@demo.com | Client123! |
 
 Le seed crée aussi 7 autres clients avec 30 jours d'historique, dont :

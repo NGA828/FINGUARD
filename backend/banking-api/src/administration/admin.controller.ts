@@ -208,7 +208,7 @@ export class AdminController {
     );
     const csv = '\ufeff' + [header, ...lines].join('\r\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename=transactions-finguard.csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=transactions-shield.csv');
     return res.send(csv);
   }
 
@@ -231,7 +231,7 @@ export class AdminController {
     );
     const csv = '\ufeff' + [header, ...lines].join('\r\n');
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-    res.setHeader('Content-Disposition', 'attachment; filename=audit-finguard.csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=audit-shield.csv');
     return res.send(csv);
   }
 }

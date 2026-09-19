@@ -1,5 +1,5 @@
 /**
- * Tests E2E FinGuard — exécutés contre une API démarrée (PORT=4000 par défaut)
+ * Tests E2E Shield — exécutés contre une API démarrée (PORT=4000 par défaut)
  * avec une base seedée (`npm run db:reset` puis `npm start`).
  *
  *   npm run test:e2e
@@ -57,11 +57,11 @@ test('RBAC : les espaces /employee et /admin sont fermés au client', async () =
 });
 
 test('RBAC : les espaces /admin sont fermés à l’employé, /customer fermé à l’employé', async () => {
-  const emp = await login('marie.kouassi@finguard.com', 'Employe123!');
+  const emp = await login('marie.kouassi@shield.com', 'Employe123!');
   assert.equal((await req('GET', '/admin/dashboard', { token: emp })).status, 403);
   assert.equal((await req('GET', '/customer/dashboard', { token: emp })).status, 403);
 
-  const admin = await login('admin@finguard.com', 'Admin123!');
+  const admin = await login('admin@shield.com', 'Admin123!');
   assert.equal((await req('GET', '/admin/dashboard', { token: admin })).status, 200);
 });
 
@@ -79,7 +79,7 @@ test('flux : petit dépôt autorisé directement (risque faible)', async () => {
 
 test('flux : gros virement mis en revue puis approuvé par l’employé', async () => {
   const client = await login('client@demo.com', 'Client123!');
-  const emp = await login('marie.kouassi@finguard.com', 'Employe123!');
+  const emp = await login('marie.kouassi@shield.com', 'Employe123!');
 
   const accounts = (await req('GET', '/customer/accounts', { token: client })).data;
   const target = 'FG-10000102';
@@ -87,7 +87,7 @@ test('flux : gros virement mis en revue puis approuvé par l’employé', async 
   const accountId = accounts[0].id;
 
   // L’administrateur relève les limites globales (rend le test rejouable).
-  const admin = await login('admin@finguard.com', 'Admin123!');
+  const admin = await login('admin@shield.com', 'Admin123!');
   const cfg = await req('POST', '/admin/config', {
     token: admin,
     body: { values: { GLOBAL_PER_TX_LIMIT: '50000000', GLOBAL_DAILY_LIMIT: '500000000' } },
@@ -190,7 +190,7 @@ test('bénéficiaires : ajout, refus de doublon, suppression', async () => {
 
 test('relevé de compte : export CSV client et employé', async () => {
   const client = await login('client@demo.com', 'Client123!');
-  const emp = await login('marie.kouassi@finguard.com', 'Employe123!');
+  const emp = await login('marie.kouassi@shield.com', 'Employe123!');
   const accounts = (await req('GET', '/customer/accounts', { token: client })).data;
   const accountId = accounts[0].id;
 
@@ -209,7 +209,7 @@ test('relevé de compte : export CSV client et employé', async () => {
 });
 
 test('simulation de fraude : aucun mouvement de fonds, analyse retournée', async () => {
-  const emp = await login('marie.kouassi@finguard.com', 'Employe123!');
+  const emp = await login('marie.kouassi@shield.com', 'Employe123!');
   const client = await login('client@demo.com', 'Client123!');
   const accounts = (await req('GET', '/customer/accounts', { token: client })).data;
   const before = accounts[0].balance;
@@ -227,7 +227,7 @@ test('simulation de fraude : aucun mouvement de fonds, analyse retournée', asyn
 });
 
 test('administration : attribution de rôle (aller-retour)', async () => {
-  const admin = await login('admin@finguard.com', 'Admin123!');
+  const admin = await login('admin@shield.com', 'Admin123!');
   const employees = (await req('GET', '/admin/employees', { token: admin })).data;
   const target = employees.find((e) => e.role === 'EMPLOYEE');
   assert.ok(target, 'au moins un employé doit exister');

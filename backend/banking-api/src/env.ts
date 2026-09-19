@@ -16,5 +16,5 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-export const JWT_SECRET = process.env.JWT_SECRET || 'finguard-dev-secret';
+export const JWT_SECRET = process.env.JWT_SECRET || 'shield-dev-secret';
 export const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '12h';
